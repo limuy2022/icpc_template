@@ -1,6 +1,6 @@
 # 图论 · 范围、建图与树的重心
 
-按 OI Wiki 图论目录整理本次指定专题。GNU C++17，点编号从 0 开始，区间统一为左闭右开。容量、权值用 long long，累加超界时使用 i128。
+按 OI Wiki 图论目录整理本次指定专题。GNU C++17，点编号为 1..n，HLD 位置也为 1..n，区间采用左闭右开。容量、权值用 long long，累加超界时使用 i128。
 
 图论页码：重心 48、HLD 49-50、树上启发式合并 51、树哈希 52、SCC 53、割点桥与双连通 54-55、2-SAT 56、二分图 57-60、最大流与最小割 61-62、费用流与上下界流 63-64。
 
@@ -18,7 +18,7 @@
 
 ## 图论模板的边界约定
 
-- 复用第 6 页的链式前向星。SCC 加有向边。割点与桥的模板成对加边，用 (arc-1)/2 判断父边。
+- 复用第 6 页的链式前向星。SCC 加有向边。割点与桥的模板成对加边，用 (arc+1)/2 判断父边。
 - 部分 DFS、匹配和流模板含递归。链形图的递归深度可达点数，栈空间不足时需改显式栈或调整可用栈空间。
 - 本部分共享 ll、i128、u64 类型别名，见第 13 页。来源范围按 OI Wiki Team 图论目录核对，整理日期 2026-11-05。
 
@@ -40,7 +40,7 @@
 
 [C++ 源码](../templates/07-graphs/range-add-sum.cpp)
 
-- 先 build_hld(g) 与 seg_init(g.n)，再按原点权 w[u] 对 pos[u] 单点加入。输入满足 $0\leq l\leq r\leq n$，所有和、懒标记及乘积须在 ll 范围内。
+- 先 build_hld(g) 与 seg_init(g.n)，再按原点权 w[u] 对 pos[u] 单点加入。输入满足 $1\leq l\leq r\leq n+1$，所有和、懒标记及乘积须在 ll 范围内。
 - 路径加用 `hld_path(u,v,[&](int l,int r){seg_add(l,r,delta);});`。
 - 路径和用 `hld_path(u,v,[&](int l,int r){ans+=seg_get(l,r);});`。点权子树和用 `seg_get(pos[u],pos[u]+sub[u])`。
 - 本实现路径操作 $\mathcal{O}(\log^2 n)$，固定根的子树操作 $\mathcal{O}(\log n)$。初始逐点加入成本为 $\mathcal{O}(n\log n)$。
@@ -57,7 +57,7 @@
 
 ## DSU on Tree，统计每个子树的不同颜色数
 
-函数内部调用 build_hld(g)，复用 sub、son、pos、rev。颜色需预先离散化到 $[0,C)$，col 有 g.n 项，C 不超过 GN。答案写入 subtree_colors。
+函数内部调用 build_hld(g)，复用 sub、son、pos、rev。颜色需预先离散化到 $[0,C)$，点 u 的颜色读 col[u]，C 不超过 GN。答案写入 subtree_colors。
 
 [C++ 源码](../templates/07-graphs/dsu-on-tree.cpp)
 
@@ -101,7 +101,7 @@
 
 [C++ 源码](../templates/07-graphs/scc.cpp)
 
-- 时间与空间 $\mathcal{O}(n+m)$。这里的分量编号按缩点 DAG 的拓扑顺序，先 scc_init(n)，用 scc_add 加边后调用 scc_build()。跨分量边 $u\to v$ 满足 scc_id[u]<scc_id[v]。
+- 时间与空间 $\mathcal{O}(n+m)$。这里的分量从 1 开始按缩点 DAG 的拓扑顺序编号，先 scc_init(n)，用 scc_add 加边后调用 scc_build()。跨分量边 $u\to v$ 满足 scc_id[u]<scc_id[v]。
 - 第二趟必须在反图上按第一趟结束时间的逆序遍历。第一趟需要真正的后序，不能把普通 BFS 序倒过来替代。
 - 原图可以非连通、有自环或重边。构造缩点图时忽略同分量边；若做度数或计数，需要按题意去掉重边。
 
@@ -116,7 +116,7 @@
 
 ## 无向图 DFS，支持重边
 
-每个非自环边有唯一编号，两条弧以 (arc-1)/2 取得同一个无向边号。用 cut_add(g,u,v) 成对加边，它跳过自环。建图后调用 build_cuts(g)。
+每个非自环边有唯一编号，两条弧以 (arc+1)/2 取得同一个无向边号。用 cut_add(g,u,v) 成对加边，它跳过自环。建图后调用 build_cuts(g)。
 
 [C++ 源码](../templates/07-graphs/undirected-cuts.cpp)
 
@@ -146,7 +146,7 @@
 
 [C++ 源码](../templates/07-graphs/block-cut-forest.cpp)
 
-- 先调用 build_cuts(g)，按圆方树建成后的点和弧数核对 GN、GA。非连通图得到森林。该“所有原顶点+所有块”的版本中，原图孤立点与它的单点块相连。
+- 先调用 build_cuts(g)。原点为 1..n，方点从 n+1 开始。按建成后的点和弧数核对 GN、GA。非连通图得到森林。该“所有原顶点+所有块”的版本中，原图孤立点与它的单点块相连。
 - 两原点之间的圆方树路径描述依次经过的割点和点双块。做“必经点”计数时，注意是否排除两个询问端点。
 - 块节点的权值或统计含义要单独定义，直接沿树路径求和可能重复计入割点。
 - 常见的“只保留割点与块节点”版本省掉非割点圆点，需要记录每个非割点所属块，不能混用两个版本的编号。
@@ -155,7 +155,7 @@
 
 ## 文字、蕴含图与赋值
 
-变量 x_i 的两个文字编号为 2i（x_i=false）与 2i+1（x_i=true）。互为否定用 id^1。复用前面的 SCC。
+变量 x_i 的两个文字编号为 2i-1（假）与 2i（真），i 从 1 开始。要求 2*n < GN，先调用 scc_init(2*n)。
 
 [C++ 源码](../templates/07-graphs/two-sat.cpp)
 
@@ -179,7 +179,7 @@
 
 ## Hopcroft-Karp，左部与右部分开编号
 
-左点编号 $[0,L)$，右点编号 $[0,R)$，g 只建左到右的边。L、R 均不超过 GN。调用 hopcroft_karp(g,R)，匹配记录在 left_match 和 right_match。时间 $\mathcal{O}((L+R+m)\sqrt{L+R})$。
+左点编号 $[1,L]$，右点编号 $[1,R]$，g 只建左到右的边。L、R 均小于 GN。调用 hopcroft_karp(g,R)，匹配记录在 left_match 和 right_match。时间 $\mathcal{O}((L+R+m)\sqrt{L+R})$。
 
 [C++ 源码](../templates/07-graphs/hopcroft-karp.cpp)
 
@@ -191,7 +191,7 @@
 
 ## Kuhn，逐个左点找增广路
 
-左部用 Graph(L) 建链式前向星，只加左到右的边。左、右各自从 0 编号，R 不超过 GN。返回最大匹配数。kuhn_match[v] 为右点 v 匹配到的左点，-1 表示未匹配。
+左部用 Graph(L) 建链式前向星，只加左到右的边。左、右各自从 1 编号，R 小于 GN。返回最大匹配数。kuhn_match[v] 为右点 v 匹配到的左点，-1 表示未匹配。
 
 [C++ 源码](../templates/07-graphs/kuhn.cpp)
 
@@ -225,7 +225,7 @@
 
 ## 最小费用矩形指派
 
-用 ForwardStar<ll>(n) 建左到右的带权边，右部有 m 点且 m 不超过 GN 和 KM_CAP。要求 $n\leq m$，每行选一个不同的列，求最小总费用。返回总费用，每行所选列写入 assignment。
+用 ForwardStar<ll>(n) 建左到右的带权边，右部有 m 点且 m 小于 GN 且不超过 KM_CAP。要求 $n\leq m$，每行选一个不同的列，求最小总费用。返回总费用，每行所选列写入 assignment。
 
 [C++ 源码](../templates/07-graphs/hungarian.cpp)
 
@@ -241,7 +241,7 @@
 [C++ 源码](../templates/07-graphs/dinic.cpp)
 
 - 每条有向边连续调用 `add(u,v,w); add(v,u,0);`，保证 `i^1` 找到反向弧。
-- 点号为 0 到 209，最多 5004 条原始边。多测清空 head 并设 cnt=1。
+- 按 1-based 使用时，点号为 1 到 209，最多 5004 条原始边。多测清空 head 并设 cnt=1。
 - 头文件放在宏前，入口用 signed main()。拼接其他模板时注意宏的作用范围。要求 s 与 t 不同，容量非负，总流量在 long long 范围内。
 - 一般时间界 $\mathcal{O}(V^2E)$。dinic 返回本次新增流量，继续调用会沿用残量。
 

@@ -8,8 +8,8 @@ int assignment[GN];
 ll hungarian(const ForwardStar<ll>& g, int m) {
     int n = g.n;
     constexpr int KM_CAP = 505;
-    static ll cost[KM_CAP][KM_CAP];
-    for (int u = 0; u < n; ++u) {
+    static ll cost[KM_CAP + 1][KM_CAP + 1];
+    for (int u = 1; u <= n; ++u) {
         for (int id = g.head[u]; id; id = g.line[id].next) {
             const auto& edge = g.line[id];
             cost[u][edge.v] = edge.val;
@@ -33,7 +33,7 @@ ll hungarian(const ForwardStar<ll>& g, int m) {
             ll delta = INF;
             for (int j = 1; j <= m; ++j)
                 if (!used[j]) {
-                    ll reduced = cost[i0 - 1][j - 1] - u[i0] - v[j];
+                    ll reduced = cost[i0][j] - u[i0] - v[j];
                     if (reduced < best[j]) {
                         best[j] = reduced;
                         way[j] = j0;
@@ -59,7 +59,7 @@ ll hungarian(const ForwardStar<ll>& g, int m) {
         } while (j0 != 0);
     }
     for (int j = 1; j <= m; ++j)
-        if (p[j]) assignment[p[j] - 1] = j - 1;
+        if (p[j]) assignment[p[j]] = j;
     return -v[0];
 }
 #if __INCLUDE_LEVEL__ == 0 // PDF: hide

@@ -7,10 +7,10 @@ using namespace std;
 // Call hopcroft_karp(g,R) first; return selected left/right vertex sets.
 pair<vector<int>, vector<int>> minimum_vertex_cover(const Graph& g, int R) {
     static char a[GN], b[GN];
-    fill_n(a, g.n, 0);
-    fill_n(b, R, 0);
+    fill_n(a + 1, g.n, 0);
+    fill_n(b + 1, R, 0);
     queue<int> q;
-    for (int u = 0; u < g.n; ++u)
+    for (int u = 1; u <= g.n; ++u)
         if (left_match[u] == -1) {
             a[u] = true;
             q.push(u);
@@ -30,9 +30,9 @@ pair<vector<int>, vector<int>> minimum_vertex_cover(const Graph& g, int R) {
         }
     }
     vector<int> left, right;
-    for (int u = 0; u < g.n; ++u)
+    for (int u = 1; u <= g.n; ++u)
         if (!a[u]) left.push_back(u);
-    for (int v = 0; v < R; ++v)
+    for (int v = 1; v <= R; ++v)
         if (b[v]) right.push_back(v);
     return {left, right};
 }

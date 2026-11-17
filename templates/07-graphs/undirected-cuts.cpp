@@ -5,18 +5,18 @@ using namespace std;
 #endif // PDF: endhide
 int cut_timer, cut_top;
 int tin[GN], low[GN], stamp[GN];
-char cut[GN], bridge[GA / 2];
-int edge_stack[GA / 2];
+char cut[GN], bridge[GA / 2 + 1];
+int edge_stack[GA / 2 + 1];
 vector<vector<int>> blocks;
 int cut_add(Graph& g, int u, int v) {
     if (u == v) return -1;
-    return (g.add_undirected(u, v) - 1) / 2;
+    return (g.add_undirected(u, v) + 1) / 2;
 }
 void cut_dfs(const Graph& g, int u, int parent_edge) {
     tin[u] = low[u] = ++cut_timer;
     int children = 0;
     for (int arc = g.head[u]; arc; arc = g.line[arc].next) {
-        int v = g.line[arc].v, id = (arc - 1) / 2;
+        int v = g.line[arc].v, id = (arc + 1) / 2;
         if (id == parent_edge) continue;
         if (!tin[v]) {
             ++children;
@@ -30,7 +30,7 @@ void cut_dfs(const Graph& g, int u, int parent_edge) {
                 vector<int> vertices;
                 while (true) {
                     int e = edge_stack[--cut_top];
-                    int a = g.line[2 * e + 2].v, b = g.line[2 * e + 1].v;
+                    int a = g.line[2 * e].v, b = g.line[2 * e - 1].v;
                     for (int x : {a, b})
                         if (stamp[x] != block_id) {
                             stamp[x] = block_id;
@@ -51,12 +51,12 @@ void build_cuts(const Graph& g) {
     int n = g.n;
     cut_timer = cut_top = 0;
     blocks.clear();
-    fill_n(tin, n, 0);
-    fill_n(low, n, 0);
-    fill_n(stamp, n, -1);
-    fill_n(cut, n, 0);
-    fill_n(bridge, g.cnt / 2, 0);
-    for (int u = 0; u < n; ++u)
+    fill_n(tin + 1, n, 0);
+    fill_n(low + 1, n, 0);
+    fill_n(stamp + 1, n, -1);
+    fill_n(cut + 1, n, 0);
+    fill_n(bridge + 1, g.cnt / 2, 0);
+    for (int u = 1; u <= n; ++u)
         if (!tin[u]) {
             if (g.head[u] == 0) blocks.push_back(vector<int>{u});
             cut_dfs(g, u, -1);

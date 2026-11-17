@@ -33,13 +33,13 @@ ll spanning_tree_count(const ForwardStar<ll>& g, ll p) {
     if (n == 0) return 0;
     int k = n - 1;
     vector<vector<ll>> a(k, vector<ll>(k));
-    for (int u = 0; u < k; ++u) {
+    for (int u = 1; u <= k; ++u) {
         for (int id = g.head[u]; id; id = g.line[id].next) {
             int v = g.line[id].v;
             ll w = g.line[id].val;
             if (u == v) continue;
-            a[u][u] = norm((i128)a[u][u] + w, p);
-            if (v < k) a[u][v] = norm((i128)a[u][v] - w, p);
+            a[u - 1][u - 1] = norm((i128)a[u - 1][u - 1] + w, p);
+            if (v <= k) a[u - 1][v - 1] = norm((i128)a[u - 1][v - 1] - w, p);
         }
     }
     return determinant_mod(a, p);

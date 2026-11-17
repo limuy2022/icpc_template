@@ -6,8 +6,8 @@ using namespace std;
 int color[GN];
 bool bipartite_color(const Graph& g) {
     int n = g.n;
-    fill_n(color, n, -1);
-    for (int root = 0; root < n; ++root)
+    fill_n(color + 1, n, -1);
+    for (int root = 1; root <= n; ++root)
         if (color[root] == -1) {
             queue<int> q;
             q.push(root);

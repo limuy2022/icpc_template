@@ -9,10 +9,10 @@ void game_outcomes(const Graph& g) {
     static Graph reverse(0);
     reverse.init(n);
     static int remain[GN];
-    fill_n(remain, n, 0);
-    fill_n(outcome, n, 0);
+    fill_n(remain + 1, n, 0);
+    fill_n(outcome + 1, n, 0);
     queue<int> q;
-    for (int u = 0; u < n; ++u) {
+    for (int u = 1; u <= n; ++u) {
         for (int id = g.head[u]; id; id = g.line[id].next) {
             int v = g.line[id].v;
             reverse.add(v, u);

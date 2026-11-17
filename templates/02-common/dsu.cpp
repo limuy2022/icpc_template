@@ -5,8 +5,8 @@ using namespace std;
 #endif // PDF: endhide
 int dsu_parent[GN], dsu_size[GN];
 void dsu_init(int n) {
-    iota(dsu_parent, dsu_parent + n, 0);
-    fill_n(dsu_size, n, 1);
+    iota(dsu_parent + 1, dsu_parent + n + 1, 1);
+    fill_n(dsu_size + 1, n, 1);
 }
 int dsu_find(int x) {
     if (dsu_parent[x] != x) dsu_parent[x] = dsu_find(dsu_parent[x]);

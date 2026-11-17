@@ -5,9 +5,9 @@ using namespace std;
 #endif // PDF: endhide
 int kuhn_match[GN];
 int kuhn(const Graph& g, int R) {
-    fill_n(kuhn_match, R, -1);
+    fill_n(kuhn_match + 1, R, -1);
     static int seen[GN];
-    fill_n(seen, R, -1);
+    fill_n(seen + 1, R, -1);
     auto augment = [&](auto&& self, int u, int round) -> bool {
         for (int id = g.head[u]; id; id = g.line[id].next) {
             int v = g.line[id].v;
@@ -21,7 +21,7 @@ int kuhn(const Graph& g, int R) {
         return false;
     };
     int matches = 0;
-    for (int u = 0; u < g.n; ++u)
+    for (int u = 1; u <= g.n; ++u)
         if (augment(augment, u, u)) ++matches;
     return matches;
 }

@@ -34,7 +34,7 @@ void subtree_distinct_colors(const Graph& g, const int col[], int C) {
         subtree_colors[u] = distinct;
         if (!keep) add_subtree(u, -1);
     };
-    if (n) dfs(dfs, 0, false);
+    if (n) dfs(dfs, 1, false);
 }
 #if __INCLUDE_LEVEL__ == 0 // PDF: hide
 int main() {}

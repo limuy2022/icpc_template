@@ -12,7 +12,7 @@ int mcf_n, mcf_cnt = 1, mcf_head[GN]{};
 void mcf_init(int vertices) {
     mcf_n = vertices;
     mcf_cnt = 1;
-    fill_n(mcf_head, mcf_n, 0);
+    fill_n(mcf_head + 1, mcf_n, 0);
 }
 void mcf_arc(int u, int v, ll w, ll cost) {
     ++mcf_cnt;
@@ -33,9 +33,9 @@ pair<ll, i128> min_cost_flow(int s, int t, ll limit = LLONG_MAX) {
         static ll dist[GN];
         static int previous[GN];
         static char in_queue[GN];
-        fill_n(dist, mcf_n, INF);
-        fill_n(previous, mcf_n, 0);
-        fill_n(in_queue, mcf_n, 0);
+        fill_n(dist + 1, mcf_n, INF);
+        fill_n(previous + 1, mcf_n, 0);
+        fill_n(in_queue + 1, mcf_n, 0);
         queue<int> q;
         q.push(s);
         in_queue[s] = true;

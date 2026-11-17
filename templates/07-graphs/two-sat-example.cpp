@@ -6,8 +6,8 @@ using namespace std;
 
 int main() { // PDF: body
     scc_init(4);
-    add_or(0, true, 1, true); // x0 or x1
-    imply(0, true, 1, false); // x0 => not x1
-    force(0, true);
-    bool ok = solve_2sat(2); // true, sat_value = {1,0}
+    add_or(1, true, 2, true); // x1 or x2
+    imply(1, true, 2, false); // x1 => not x2
+    force(1, true);
+    bool ok = solve_2sat(2); // true, sat_value[1..2] = {1,0}
 }

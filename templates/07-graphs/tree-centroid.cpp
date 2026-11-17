@@ -8,11 +8,11 @@ int tree_centroids(const Graph& g) {
     int n = g.n;
     if (n == 0) return 0;
     static int parent[GN], size[GN], order[GN];
-    fill_n(size, n, 1);
+    fill_n(size + 1, n, 1);
     int found = 0;
     int used = 1;
-    order[0] = 0;
-    parent[0] = 0;
+    order[0] = 1;
+    parent[1] = 1;
     for (int i = 0; i < used; ++i) {
         int u = order[i];
         for (int id = g.head[u]; id; id = g.line[id].next) {

@@ -11,7 +11,7 @@ template <class W = int> struct ForwardStar {
     void init(int vertices) {
         n = vertices;
         cnt = 0;
-        fill_n(head, n, 0);
+        fill_n(head + 1, n, 0);
     }
     int add(int u, int v, W w = W{}) {
         ++cnt;

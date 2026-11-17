@@ -5,10 +5,10 @@ using namespace std;
 #endif // PDF: endhide
 int fa[GN], dep[GN], sub[GN], son[GN];
 int top[GN], pos[GN], rev[GN];
-void build_hld(const Graph& g, int root = 0) {
+void build_hld(const Graph& g, int root = 1) {
     int n = g.n;
-    fill_n(sub, n, 1);
-    fill_n(son, n, -1);
+    fill_n(sub + 1, n, 1);
+    fill_n(son + 1, n, -1);
     if (n == 0) return;
     static int order[GN];
     int used = 1;
@@ -34,7 +34,7 @@ void build_hld(const Graph& g, int root = 0) {
             if (son[u] == -1 || sub[v] > sub[son[u]]) son[u] = v;
         }
     }
-    int timer = 0;
+    int timer = 1;
     static int tasks[GN];
     int pending = 0;
     tasks[pending++] = root;

@@ -17,10 +17,10 @@ void scc_add(int u, int v) {
 void scc_build() {
     int n = scc_g.n;
     static char seen[GN];
-    fill_n(seen, n, 0);
+    fill_n(seen + 1, n, 0);
     static int order[GN], stack[GN], arc[GN];
     int done = 0;
-    for (int root = 0; root < n; ++root)
+    for (int root = 1; root <= n; ++root)
         if (!seen[root]) {
             int size = 1;
             stack[0] = root;
@@ -42,14 +42,14 @@ void scc_build() {
                 }
             }
         }
-    fill_n(scc_id, n, -1);
+    fill_n(scc_id + 1, n, -1);
     scc_count = 0;
     while (done) {
         int root = order[--done];
         if (scc_id[root] != -1) continue;
         int size = 1;
         stack[0] = root;
-        scc_id[root] = scc_count;
+        scc_id[root] = ++scc_count;
         while (size) {
             int u = stack[--size];
             for (int id = scc_rg.head[u]; id; id = scc_rg.line[id].next) {
@@ -59,7 +59,6 @@ void scc_build() {
                 stack[size++] = v;
             }
         }
-        ++scc_count;
     }
 }
 #if __INCLUDE_LEVEL__ == 0 // PDF: hide

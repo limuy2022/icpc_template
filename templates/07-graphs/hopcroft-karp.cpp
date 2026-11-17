@@ -10,7 +10,7 @@ bool hk_bfs(const Graph& g) {
     int L = g.n;
     queue<int> q;
     hk_shortest = HK_INF;
-    for (int u = 0; u < L; ++u) {
+    for (int u = 1; u <= L; ++u) {
         hk_dist[u] = left_match[u] == -1 ? 0 : HK_INF;
         if (hk_dist[u] == 0) q.push(u);
     }
@@ -47,12 +47,12 @@ bool hk_dfs(const Graph& g, int u) {
 }
 int hopcroft_karp(const Graph& g, int R) {
     int L = g.n;
-    fill_n(left_match, L, -1);
-    fill_n(right_match, R, -1);
+    fill_n(left_match + 1, L, -1);
+    fill_n(right_match + 1, R, -1);
     int answer = 0;
     while (hk_bfs(g)) {
-        copy_n(g.head, L, hk_cur);
-        for (int u = 0; u < L; ++u)
+        copy_n(g.head + 1, L, hk_cur + 1);
+        for (int u = 1; u <= L; ++u)
             if (left_match[u] == -1 && hk_dfs(g, u)) ++answer;
     }
     return answer;
