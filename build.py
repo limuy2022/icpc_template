@@ -25,7 +25,8 @@ BODY = "Chinese"
 MONO = "Courier"
 FENCE = chr(96) * 3
 INLINE = re.compile(r"(\$[^$]+\$|\x60[^\x60]+\x60)")
-CPP_INCLUDE = re.compile(r"^\[C\+\+ 源码\]\(([^)]+\.cpp)\)$")
+SOURCE_INCLUDE = re.compile(r"^\[(C\+\+|Python) 源码\]\(([^)]+)\)$")
+SOURCE_SUFFIX = {"C++": ".cpp", "Python": ".py"}
 CPP_PREAMBLE = ["#include <bits/stdc++.h>", "using namespace std;"]
 CPP_MAIN = "int main() { // PDF: body"
 CPP_HIDE = "#if __INCLUDE_LEVEL__ == 0 // PDF: hide"
@@ -93,15 +94,20 @@ def read_pages():
     for chapter in chapters:
         code = False
         for number, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
-            include = CPP_INCLUDE.fullmatch(line) if not code else None
+            include = SOURCE_INCLUDE.fullmatch(line) if not code else None
             if include:
-                source = (chapter.parent / include[1]).resolve()
-                if not source.is_relative_to(ROOT / "templates") or not source.is_file():
-                    raise SystemExit(f"{chapter.name}:{number} 找不到模板 {include[1]}")
+                language, path = include.groups()
+                source = (chapter.parent / path).resolve()
+                if (source.suffix != SOURCE_SUFFIX[language]
+                        or not source.is_relative_to(ROOT / "templates")
+                        or not source.is_file()):
+                    raise SystemExit(f"{chapter.name}:{number} 找不到模板 {path}")
                 body = pages[-1][1]
                 body.append(("space", ""))
-                for cpp_line in read_cpp(source):
-                    body.append(("code", cpp_line.expandtabs(4)))
+                lines = (read_cpp(source) if language == "C++" else
+                         source.read_text(encoding="utf-8").splitlines())
+                for source_line in lines:
+                    body.append(("code", source_line.expandtabs(4)))
                 body.append(("space", ""))
             elif line.startswith(FENCE):
                 code = not code

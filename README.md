@@ -43,3 +43,14 @@ find templates -name '*.cpp' -exec clang-format -i {} +
 ```
 
 只检查格式时，把 `-i` 换成 `--dry-run --Werror`。
+
+
+## 本地对拍
+
+先编译待测程序和暴力程序，再运行：
+
+```sh
+python3 templates/13-stress/stress.py ./main ./brute --seed 0 --rounds 200
+```
+
+生成器支持 `--kind array`、`perm`、`string`、`tree` 和 `graph`。可以单独运行 `python3 templates/13-stress/gen.py 42 --kind tree`，也可修改生成函数以匹配题目输入。对拍失败会在运行目录保存 `fail.in` 和两份输出。
