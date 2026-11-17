@@ -27,3 +27,5 @@ python3 -m venv .venv
 ```
 
 路径相对于当前章节文件。每个 `.cpp` 的前两行统一写 `#include <bits/stdc++.h>` 和 `using namespace std;`，生成 PDF 时会省略这两行。在 GitHub 的 Markdown 预览里可以点击链接查看源码。部分板子依赖同章示例或共用类型和函数，按手册说明搭配使用。
+
+可执行的用法示例用 `int main() { // PDF: body` 开头，正文统一缩进四个空格，最后一行用 `}` 结束。把示例依赖的 `#include` 放在入口前。生成 PDF 时只展开 main 正文，并还原它的缩进。

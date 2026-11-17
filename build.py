@@ -27,6 +27,7 @@ FENCE = chr(96) * 3
 INLINE = re.compile(r"(\$[^$]+\$|\x60[^\x60]+\x60)")
 CPP_INCLUDE = re.compile(r"^\[C\+\+ 源码\]\(([^)]+\.cpp)\)$")
 CPP_PREAMBLE = ["#include <bits/stdc++.h>", "using namespace std;"]
+CPP_MAIN = "int main() { // PDF: body"
 
 
 def register_font(path):
@@ -59,6 +60,19 @@ def register_font(path):
     raise SystemExit("找不到可嵌入的中文 TrueType 字体，请用 --font 指定字体文件。")
 
 
+def read_cpp(source):
+    lines = source.read_text(encoding="utf-8").splitlines()
+    if lines[:2] == CPP_PREAMBLE:
+        lines = lines[2:]
+    if CPP_MAIN not in lines:
+        return lines
+    start = lines.index(CPP_MAIN)
+    if lines[-1] != "}" or any(line and not line.startswith("#include ")
+                                for line in lines[:start]):
+        raise SystemExit(f"{source.name} 的示例入口格式不正确。")
+    return [line.removeprefix("    ") for line in lines[start + 1:-1]]
+
+
 def read_pages():
     chapters = sorted((ROOT / "chapters").glob("[0-9][0-9]-*.md"))
     if not chapters:
@@ -74,10 +88,7 @@ def read_pages():
                     raise SystemExit(f"{chapter.name}:{number} 找不到模板 {include[1]}")
                 body = pages[-1][1]
                 body.append(("space", ""))
-                lines = source.read_text(encoding="utf-8").splitlines()
-                if lines[:2] == CPP_PREAMBLE:
-                    lines = lines[2:]
-                for cpp_line in lines:
+                for cpp_line in read_cpp(source):
                     body.append(("code", cpp_line.expandtabs(4)))
                 body.append(("space", ""))
             elif line.startswith(FENCE):
