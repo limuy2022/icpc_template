@@ -18,7 +18,7 @@
 
 [C++ 源码](../templates/02-common/dsu.cpp)
 
-- `find(a) == find(b)` 判连通，`size[find(a)]` 取连通块大小。`unite` 返回是否真的合并。
+- 先调用 `dsu_init(n)`。`dsu_find(a) == dsu_find(b)` 判连通，`dsu_size[dsu_find(a)]` 取块大小。`unite` 返回是否真的合并。
 - 路径压缩配合按大小合并，单次操作均摊$\mathcal{O}(\alpha (n))$。
 
 - 割点、桥与点双连通分量见图论章节，其中的桥模板支持平行边。

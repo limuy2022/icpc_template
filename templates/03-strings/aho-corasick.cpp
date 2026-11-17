@@ -1,49 +1,51 @@
 #include <bits/stdc++.h>
 using namespace std;
-struct AhoCorasick {
-    struct Node {
-        int go[26]{};
-        int fail = 0;
-    };
-    static constexpr int CAP = 200005;
-    Node t[CAP];
-    int sz = 1, order[CAP], used = 0;
-    int insert(string_view s) {
-        int u = 0;
-        for (char ch : s) {
-            int c = ch - 'a';
-            if (!t[u].go[c]) {
-                t[u].go[c] = sz++;
-            }
-            u = t[u].go[c];
-        }
-        return u;                        // save endpoint for this pattern
-    }
-    void build() {
-        for (int c = 0; c < 26; ++c)
-            if (t[0].go[c]) order[used++] = t[0].go[c];
-        for (int i = 0; i < used; ++i) {
-            int u = order[i], f = t[u].fail;
-            for (int c = 0; c < 26; ++c) {
-                int v = t[u].go[c];
-                if (v) {
-                    t[v].fail = t[f].go[c];
-                    order[used++] = v;
-                } else t[u].go[c] = t[f].go[c];
-            }
-        }
-    }
-    vector<long long> count(string_view text) const {
-        vector<long long> cnt(sz);
-        int u = 0;
-        for (char ch : text) {
-            u = t[u].go[ch - 'a'];
-            ++cnt[u];
-        }
-        for (int i = used - 1; i >= 0; --i) {
-            int v = order[i];
-            cnt[t[v].fail] += cnt[v];
-        }
-        return cnt;
-    }
+struct ACNode {
+    int go[26]{};
+    int fail = 0;
 };
+static constexpr int AC_CAP = 200005;
+ACNode ac[AC_CAP];
+int ac_sz = 1, ac_order[AC_CAP], ac_used = 0;
+void ac_init() {
+    ac[0] = {}; ac_sz = 1; ac_used = 0;
+}
+int ac_insert(string_view s) {
+    int u = 0;
+    for (char ch : s) {
+        int c = ch - 'a';
+        if (!ac[u].go[c]) {
+            ac[ac_sz] = {};
+            ac[u].go[c] = ac_sz++;
+        }
+        u = ac[u].go[c];
+    }
+    return u;                        // save endpoint for this pattern
+}
+void ac_build() {
+    for (int c = 0; c < 26; ++c)
+        if (ac[0].go[c]) ac_order[ac_used++] = ac[0].go[c];
+    for (int i = 0; i < ac_used; ++i) {
+        int u = ac_order[i], f = ac[u].fail;
+        for (int c = 0; c < 26; ++c) {
+            int v = ac[u].go[c];
+            if (v) {
+                ac[v].fail = ac[f].go[c];
+                ac_order[ac_used++] = v;
+            } else ac[u].go[c] = ac[f].go[c];
+        }
+    }
+}
+vector<long long> ac_count(string_view text) {
+    vector<long long> cnt(ac_sz);
+    int u = 0;
+    for (char ch : text) {
+        u = ac[u].go[ch - 'a'];
+        ++cnt[u];
+    }
+    for (int i = ac_used - 1; i >= 0; --i) {
+        int v = ac_order[i];
+        cnt[ac[v].fail] += cnt[v];
+    }
+    return cnt;
+}

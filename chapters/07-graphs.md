@@ -26,12 +26,12 @@
 
 ## 迭代重链剖分
 
-重儿子取子树最大的儿子。重链连续，子树也连续，子树 u 对应 $[\mathrm{pos}[u],\mathrm{pos}[u]+\mathrm{size}[u])$。
+重儿子取子树最大的儿子。重链连续，子树也连续，调用 build_hld(g,root)，子树 u 对应 $[\mathrm{pos}[u],\mathrm{pos}[u]+\mathrm{sub}[u])$。
 
 [C++ 源码](../templates/07-graphs/hld.cpp)
 
 - 输入为连通树。预处理 $\mathcal{O}(n)$，一次路径拆成 $\mathcal{O}(\log n)$ 段，LCA 为 $\mathcal{O}(\log n)$。
-- path 的段次序和方向适用于和、最大值等交换运算。矩阵积、字符串等需分 u/v 两侧收集，再按方向合并。
+- hld_path 的段次序和方向适用于和、最大值等交换运算。矩阵积、字符串等需分 u/v 两侧收集，再按方向合并。
 - 边权放在较深端点的位置，root 位置放单位元，调用时 edge_values=true，最后一段排除 LCA。
 
 # 图论 · HLD 区间维护与换根
@@ -40,24 +40,24 @@
 
 [C++ 源码](../templates/07-graphs/range-add-sum.cpp)
 
-- 先建 HLD，再按原点权 w[u] 对 pos[u] 单点加入。输入满足 $0\leq l\leq r\leq n$，所有和、懒标记及乘积须在 ll 范围内。
-- 路径加用 `h.path(u,v,[&](int l,int r){seg.add(l,r,delta);});`。
-- 路径和用 `h.path(u,v,[&](int l,int r){ans+=seg.get(l,r);});`。点权子树和用 `seg.get(h.pos[u],h.pos[u]+h.size[u])`。
+- 先 build_hld(g) 与 seg_init(g.n)，再按原点权 w[u] 对 pos[u] 单点加入。输入满足 $0\leq l\leq r\leq n$，所有和、懒标记及乘积须在 ll 范围内。
+- 路径加用 `hld_path(u,v,[&](int l,int r){seg_add(l,r,delta);});`。
+- 路径和用 `hld_path(u,v,[&](int l,int r){ans+=seg_get(l,r);});`。点权子树和用 `seg_get(pos[u],pos[u]+sub[u])`。
 - 本实现路径操作 $\mathcal{O}(\log^2 n)$，固定根的子树操作 $\mathcal{O}(\log n)$。初始逐点加入成本为 $\mathcal{O}(n\log n)$。
 
 ## 换根后的子树
 
 - 设预处理根不动、逻辑根改为 r。u=r 时，新子树是整棵树。
-- 若 u 不是 r 的祖先，新子树仍是原来的子树区间。祖先关系可用 pos、size 判断。
+- 若 u 不是 r 的祖先，新子树仍是原来的子树区间。祖先关系可用 pos、sub 判断。
 - 若 u 是 r 的严格祖先，找到 u 到 r 路径上紧邻 u 的孩子 c，新子树是整棵树去掉 c 的原子树，即至多两个区间。
-- 寻找 c 可沿链顶向上跳，或用倍增把 r 提升到 depth[u]+1。处理边权时另核对边界边是否计入。
+- 寻找 c 可沿链顶向上跳，或用倍增把 r 提升到 dep[u]+1。处理边权时另核对边界边是否计入。
 - 长链剖分按子树最大深度选重儿子，常用于按深度 DP 与 k 级祖先；此处模板按子树大小剖分。
 
 # 图论 · 树上启发式合并
 
 ## DSU on Tree，统计每个子树的不同颜色数
 
-复用 HLD 的 size、heavy、pos、rev。颜色需预先离散化到 $[0,C)$，col.size() 与点数相同，C 不超过 GN。
+函数内部调用 build_hld(g)，复用 sub、son、pos、rev。颜色需预先离散化到 $[0,C)$，col.size() 与点数相同，C 不超过 GN。
 
 [C++ 源码](../templates/07-graphs/dsu-on-tree.cpp)
 
@@ -101,7 +101,7 @@
 
 [C++ 源码](../templates/07-graphs/scc.cpp)
 
-- 时间与空间 $\mathcal{O}(n+m)$。这里的分量编号按缩点 DAG 的拓扑顺序，跨分量边 $u\to v$ 满足 comp[u]<comp[v]。
+- 时间与空间 $\mathcal{O}(n+m)$。这里的分量编号按缩点 DAG 的拓扑顺序，先 scc_init(n)，用 scc_add 加边后调用 scc_build()。跨分量边 $u\to v$ 满足 scc_id[u]<scc_id[v]。
 - 第二趟必须在反图上按第一趟结束时间的逆序遍历。第一趟需要真正的后序，不能把普通 BFS 序倒过来替代。
 - 原图可以非连通、有自环或重边。构造缩点图时忽略同分量边；若做度数或计数，需要按题意去掉重边。
 
@@ -116,7 +116,7 @@
 
 ## 无向图 DFS，支持重边
 
-每个非自环边有唯一编号，两条弧以 (arc-1)/2 取得同一个无向边号。本模板忽略自环，点双块按去掉自环后的图定义。
+每个非自环边有唯一编号，两条弧以 (arc-1)/2 取得同一个无向边号。用 cut_add(g,u,v) 成对加边，它跳过自环。建图后调用 build_cuts(g)。
 
 [C++ 源码](../templates/07-graphs/undirected-cuts.cpp)
 
@@ -127,7 +127,7 @@
 
 ## 边双连通分量
 
-删掉全部桥后，剩下图的连通块就是边双分量。复用上一页的 UndirectedCuts，先调用 build。
+删掉全部桥后，剩下图的连通块就是边双分量。先对同一张图调用 build_cuts(g)。
 
 [C++ 源码](../templates/07-graphs/edge-bcc.cpp)
 
@@ -146,7 +146,7 @@
 
 [C++ 源码](../templates/07-graphs/block-cut-forest.cpp)
 
-- 先调用 graph.build()，按圆方树建成后的点和弧数核对 GN、GA。非连通图得到森林。该“所有原顶点+所有块”的版本中，原图孤立点与它的单点块相连。
+- 先调用 build_cuts(g)，按圆方树建成后的点和弧数核对 GN、GA。非连通图得到森林。该“所有原顶点+所有块”的版本中，原图孤立点与它的单点块相连。
 - 两原点之间的圆方树路径描述依次经过的割点和点双块。做“必经点”计数时，注意是否排除两个询问端点。
 - 块节点的权值或统计含义要单独定义，直接沿树路径求和可能重复计入割点。
 - 常见的“只保留割点与块节点”版本省掉非割点圆点，需要记录每个非割点所属块，不能混用两个版本的编号。
@@ -169,7 +169,7 @@
 - 恰好一个为真，加入上述两个子句。相等 $x_i=x_j$，加入两个方向的蕴含。
 - 强制 x_i=true 用 force(i,true)。形如“不能同时选择状态 a,b”用 add_or(i,!a,j,!b)。
 - “至少三个里一个为真”不是一般 2-CNF 子句。不能仅凭引入一个变量就无条件转成等价 2-SAT。
-- solve 给一组可行解，题目要求字典序最小解时还需要额外处理。
+- solve_2sat(n) 返回一组可行解，题目要求字典序最小解时还需要额外处理。
 
 ## 例子
 
@@ -179,7 +179,7 @@
 
 ## Hopcroft-Karp，左部与右部分开编号
 
-左点编号 $[0,L)$，右点编号 $[0,R)$，g 只建左到右的边。L、R 均不超过 GN。时间 $\mathcal{O}((L+R+m)\sqrt{L+R})$。
+左点编号 $[0,L)$，右点编号 $[0,R)$，g 只建左到右的边。L、R 均不超过 GN。调用 hopcroft_karp(g,R)，匹配记录在 left_match 和 right_match。时间 $\mathcal{O}((L+R+m)\sqrt{L+R})$。
 
 [C++ 源码](../templates/07-graphs/hopcroft-karp.cpp)
 
@@ -212,7 +212,7 @@
 ## 最小点覆盖与最大独立集
 
 - Kőnig 定理，二分图最小点覆盖大小等于最大匹配大小。最大独立集大小为总点数减最小点覆盖大小。
-- 求出最大匹配后，从所有未匹配左点出发，沿“左到右走非匹配边，右到左走匹配边”搜索。
+- 先对同一张图调用 hopcroft_karp(g,R)。从所有未匹配左点出发，沿“左到右走非匹配边，右到左走匹配边”搜索。
 - 可达左点集合为 Z_L、可达右点集合为 Z_R，最小点覆盖为 $(L\setminus Z_L)\cup Z_R$。
 
 [C++ 源码](../templates/07-graphs/minimum-vertex-cover.cpp)
@@ -280,7 +280,7 @@
 
 [C++ 源码](../templates/07-graphs/min-cost-flow.cpp)
 
-- 容量上限 GN、GA 见第 6 页。容量非负，费用可负，反向费用必须取负；输入费用不能为 LLONG_MIN。返回本次新增流量及新增费用。
+- 先 mcf_init(n)，用 mcf_add 加边。容量上限 GN、GA 见第 6 页。容量非负，费用可负，反向费用必须取负；输入费用不能为 LLONG_MIN。返回本次新增流量及新增费用。
 - limit=K 表示尽量发送 K 单位，返回流量<K 表示无法完成要求。默认发送到无路可增广，得到最小费用最大流。
 - SPFA 在本算法中的最坏单轮可很慢，整数流量 F 下常写 $\mathcal{O}(FVE)$。大数据使用下一页的势能 Dijkstra 路线。
 - 有可达负费用环时，最短游走无下界，模板可能不终止；有限容量负环需要消圈或适合该模型的费用流算法。

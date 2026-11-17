@@ -2,7 +2,7 @@
 using namespace std;
 vector<int> subtree_distinct_colors(const Graph& g,
                                   const vector<int>& col,int C) {
-    HLD h(g);
+    build_hld(g);
     int n = g.n;
     static int count[GN];
     fill_n(count,C,0);
@@ -15,18 +15,18 @@ vector<int> subtree_distinct_colors(const Graph& g,
         if (count[c] == 0) --distinct;
     };
     auto add_subtree = [&](int u,int delta) {
-        for (int i = h.pos[u]; i < h.pos[u]+h.size[u]; ++i)
-            add_vertex(h.rev[i],delta);
+        for (int i = pos[u]; i < pos[u]+sub[u]; ++i)
+            add_vertex(rev[i],delta);
     };
     auto dfs = [&](auto&& self,int u,bool keep) -> void {
         for (int id = g.head[u]; id; id = g.line[id].next) {
             int v = g.line[id].v;
-            if (h.parent[v] == u && v != h.heavy[u]) self(self,v,false);
+            if (fa[v] == u && v != son[u]) self(self,v,false);
         }
-        if (h.heavy[u] != -1) self(self,h.heavy[u],true);
+        if (son[u] != -1) self(self,son[u],true);
         for (int id = g.head[u]; id; id = g.line[id].next) {
             int v = g.line[id].v;
-            if (h.parent[v] == u && v != h.heavy[u]) add_subtree(v,1);
+            if (fa[v] == u && v != son[u]) add_subtree(v,1);
         }
         add_vertex(u,1);
         answer[u] = distinct;

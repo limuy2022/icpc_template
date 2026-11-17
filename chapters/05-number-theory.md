@@ -131,7 +131,7 @@
 
 [C++ 源码](../templates/05-number-theory/linear-sieve.cpp)
 
-- n 不超过 MAX_N，筛表对象放全局或声明为 static。
+- 调用 linear_sieve(n)，n 不超过 SIEVE_MAX。
 - Eratosthenes 从$p^{2}$开始标记，$\mathcal{O}(N \log  \log  N)$。线性筛每个合数由其最小素因子产生一次，$\mathcal{O}(N)$。
 - 分段筛 [L,R] 先筛到$\sqrt{R}$，对每个 p 从$\max (p^{2},\left\lceil L/p\right\rceilp)$标记。单独排除 0、1，不能把 p 自身筛掉。
 - 只筛奇数可省空间。bitset/位压缩适合只需要素性。lp 数组支持$\mathcal{O}(\log  n)$次除法分解范围内的数。
@@ -342,7 +342,7 @@ $v_p(n)$是 p 在非零整数 n 中的指数。$v_p(ab)=v_p(a)+v_p(b)$，$v_p(a+
 
 [C++ 源码](../templates/05-number-theory/dujiao-sieve.cpp)
 
-- 输入$n\geq 0$，预筛上限至少为 1，Dujiao 对象放全局或声明为 static。预筛内的答案用前缀表读取，最终结果与累加项须能用 i128 表示。
+- 输入$n\geq 0$，先 linear_sieve(B)，再 dujiao_init()，查询用 dujiao_sum(n)。预筛上限 B 至少为 1。预筛内的答案用前缀表读取，最终结果与累加项须能用 i128 表示。
 - 通常取预筛$B\approx n^{2/3}$，忽略字典额外开销时总成本可到$\mathcal{O}(n^{2/3})$量级。内存不足时调小 B 会增加递归工作。
 
 # 数论 · 素数计数与素数幂和
