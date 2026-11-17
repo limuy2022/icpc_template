@@ -1,5 +1,5 @@
-import argparse
 import random
+import sys
 
 
 def array_case(rng):
@@ -44,8 +44,4 @@ def make_case(seed, kind="array"):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("seed", type=int)
-    parser.add_argument("--kind", choices=CASES, default="array")
-    args = parser.parse_args()
-    print(make_case(args.seed, args.kind), end="")
+    print(make_case(int(sys.argv[1]), *sys.argv[2:]), end="")

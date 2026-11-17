@@ -1,23 +1,23 @@
 # Python · 本地对拍
 
-先编译待测程序和暴力程序，两者都用标准输入输出。把 stress.py 和 gen.py 放在同一目录。
+编译好两份程序后，直接改脚本开头的 candidate 和 brute。将 stress.py、gen.py 放在同一目录。
 
 ```text
-python3 templates/13-stress/stress.py ./main ./brute --seed 0 --rounds 200
+python3 templates/13-stress/stress.py
 ```
 
 [Python 源码](../templates/13-stress/stress.py)
 
-- 默认按空白分词后比较答案。输出有浮点误差或允许多解时，按题目规则修改比较逻辑。
-- 失败时在当前目录保存 fail.in、两份标准输出和错误输出。记录 seed 与 kind，复现时可以直接喂 fail.in。
-- 修改 gen.py 让生成数据符合题目输入格式。暴力程序应能在小数据上稳定给出正确结果。
+- 每轮用当前时间取种子，一直跑到程序退出非零或答案不同。按空白分词比较答案。
+- 失败时直接用当前目录的 fail.in 复现。两份程序的标准输出分别写入 candidate.out 和 brute.out，错误输出留在终端。
+- 在 make_case 中换数据类型或直接改生成函数。需要手动停拍时按 Ctrl+C。
 
 # Python · 常用小数据生成
 
-每次以同一个种子初始化随机数生成器。用 --kind 选数据类型，也可以把同一参数传给对拍脚本。
+相同种子和类型生成相同数据。独立生成时依次传种子和类型，省略类型时生成数组。
 
 ```text
-python3 templates/13-stress/gen.py 42 --kind tree > test.in
+python3 templates/13-stress/gen.py 42 tree > test.in
 ```
 
 [Python 源码](../templates/13-stress/gen.py)

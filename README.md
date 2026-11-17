@@ -47,10 +47,10 @@ find templates -name '*.cpp' -exec clang-format -i {} +
 
 ## 本地对拍
 
-先编译待测程序和暴力程序，再运行：
+先编译待测程序和暴力程序，直接修改 `stress.py` 开头的 `candidate`、`brute`，再运行：
 
 ```sh
-python3 templates/13-stress/stress.py ./main ./brute --seed 0 --rounds 200
+python3 templates/13-stress/stress.py
 ```
 
-生成器支持 `--kind array`、`perm`、`string`、`tree` 和 `graph`。可以单独运行 `python3 templates/13-stress/gen.py 42 --kind tree`，也可修改生成函数以匹配题目输入。对拍失败会在运行目录保存 `fail.in` 和两份输出。
+每轮用当前时间取种子，失败时保留 `fail.in`。在 `make_case` 中可选 `array`、`perm`、`string`、`tree` 或 `graph`，也可以直接改生成函数。单独生成可运行 `python3 templates/13-stress/gen.py 42 tree`。
