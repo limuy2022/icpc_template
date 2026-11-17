@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> game_outcomes(const Graph& g) {
     int n = g.n;
     static Graph reverse(0);

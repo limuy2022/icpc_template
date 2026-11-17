@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> z_function(string_view s) {
     int n = (int)s.size();
     vector<int> z(n);                          // z[0] = 0 by convention

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> a{4, 1, 3, 1};
 sort(a.begin(), a.end());
 a.erase(unique(a.begin(), a.end()), a.end());   // {1, 3, 4}

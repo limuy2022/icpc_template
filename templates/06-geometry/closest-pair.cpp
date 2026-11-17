@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ld closest_pair2(vector<Point> p) {
     if (p.size() < 2) return numeric_limits<ld>::infinity();
     sort(p.begin(),p.end(),lex_less);

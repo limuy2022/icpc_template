@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct SuffixArray {
     static constexpr int CAP = 200005;
     int sa[CAP], rk[CAP], height[CAP];

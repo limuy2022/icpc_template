@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct NumberSieve {
     static constexpr int MAX_N = 1000000;
     int lp[MAX_N+1]{}, phi[MAX_N+1]{}, mu[MAX_N+1]{};

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> tree_centroids(const Graph& g) {
     int n = g.n;
     if (n == 0) return {};

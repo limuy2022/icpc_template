@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 using ld = long double;
 const ld EPS = 1e-12L;
 const ld PI = acosl(-1.0L);

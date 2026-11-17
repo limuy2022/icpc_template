@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll sqrt_mod(ll a, ll p) {
     a = norm(a, p);
     if (p == 2 || a == 0) return a;

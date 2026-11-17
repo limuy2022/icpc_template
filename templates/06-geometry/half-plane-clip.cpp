@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<Point> clip_left(const vector<Point>& polygon, Point a, Point b) {
     vector<Point> result;
     int n = (int)polygon.size();

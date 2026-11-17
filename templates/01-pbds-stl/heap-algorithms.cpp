@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 int a[]{4, 1, 3, 2, 5};
 partial_sort(a, a + 2, a+5);  // first: 1, 2
 bool positive = all_of(a, a+5, [](int x){return x>0;});

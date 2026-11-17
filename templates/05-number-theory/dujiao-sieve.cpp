@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct Dujiao {
     ll small_phi[NumberSieve::MAX_N+1]{};
     ll small_mu[NumberSieve::MAX_N+1]{};

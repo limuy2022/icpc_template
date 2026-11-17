@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<ll> derangements(int n,ll mod) {        // n >= 0, mod >= 1
     vector<ll> d(n+1);
     d[0] = 1%mod;

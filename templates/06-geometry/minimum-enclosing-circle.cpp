@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct Circle { Point o; ld r; };
 Circle diameter_circle(Point a,Point b) {
     return {(a+b)/2,length(a-b)/2};

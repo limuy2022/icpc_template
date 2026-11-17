@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> edge_bcc(const UndirectedCuts& graph) {
     vector<int> comp(graph.n,-1);
     int total = 0;

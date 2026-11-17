@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<pair<ll,ll>> farey(ll N) {         // N >= 1; output can be O(N^2)
     vector<pair<ll,ll>> out{{0,1}};
     ll a = 0, b = 1, c = 1, d = N;

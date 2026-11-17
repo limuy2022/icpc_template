@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct RealSystem {
     bool consistent;
     int rank;

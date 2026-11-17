@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 __gnu_pbds::gp_hash_table<long long, int> freq;
 long long x = 42;
 ++freq[x];                     // missing key starts at 0

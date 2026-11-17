@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 // Uses i128 internally; every combined modulus must fit in long long.
 optional<pair<ll,ll>> crt_merge(ll r, ll M, ll a, ll m) {
     r = norm(r, M); a = norm(a, m);

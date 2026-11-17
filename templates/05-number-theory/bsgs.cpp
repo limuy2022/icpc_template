@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll bsgs_coprime(ll a, ll b, ll m) {
     if (m == 1) return 0;
     ll t = (ll)sqrtl((long double)m) + 1;

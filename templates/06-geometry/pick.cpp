@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct IPoint { ll x, y; };
 pair<i128,i128> lattice_polygon(const vector<IPoint>& p) {
     i128 area2 = 0, boundary = 0;

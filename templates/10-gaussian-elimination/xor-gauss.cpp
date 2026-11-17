@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 constexpr int XOR_VARIABLES = 512;
 struct XorSystem {
     bool consistent;

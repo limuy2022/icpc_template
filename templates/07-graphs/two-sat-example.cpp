@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 TwoSAT sat(2);
 sat.add_or(0,true,1,true);       // x0 or x1
 sat.imply(0,true,1,false);       // x0 => not x1

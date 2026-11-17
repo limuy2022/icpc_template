@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 int point_in_polygon(Point q, const vector<Point>& p) {
     int winding = 0, n = (int)p.size();
     for (int i = 0; i < n; ++i) {

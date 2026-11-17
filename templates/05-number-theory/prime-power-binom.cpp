@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct PrimePowerBinom {
     ll p, mod;
     vector<ll> pref;

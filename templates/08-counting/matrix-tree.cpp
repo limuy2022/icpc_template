@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll determinant_mod(vector<vector<ll>> a,ll p) { // square; p prime
     int n = (int)a.size();
     for (auto& row : a) for (ll& x : row) x = norm(x,p);

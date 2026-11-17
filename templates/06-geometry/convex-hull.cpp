@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<Point> convex_hull(vector<Point> p) {
     sort(p.begin(),p.end(),lex_less);
     p.erase(unique(p.begin(),p.end(),[](Point a,Point b) {

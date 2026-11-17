@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 string s = "banana";
 static SuffixArray a(s);
 // sa = {5, 3, 1, 0, 4, 2}; height = {0, 1, 3, 0, 0, 2}

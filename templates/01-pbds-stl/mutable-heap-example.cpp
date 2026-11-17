@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 Heap q, other;
 Heap::point_iterator h = q.push({10, 1});
 q.push({5, 2});

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 u64 mul64(u64 a, u64 b, u64 m) { return (u128)a * b % m; }
 u64 pow64(u64 a, u64 e, u64 m) {
     u64 r = 1 % m;

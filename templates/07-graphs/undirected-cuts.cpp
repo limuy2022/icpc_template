@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct UndirectedCuts {
     int n, timer = 0, top = 0;
     Graph g;

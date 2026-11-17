@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct MinCostFlow {
     struct Edge { int v, next; ll val, cost; } line[GA]{};
     int n, cnt = 1, head[GN]{};

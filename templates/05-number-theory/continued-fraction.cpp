@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<ll> continued_fraction(ll a, ll b) { // a>=0, b>0
     vector<ll> terms;
     while (b) {

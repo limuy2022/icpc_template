@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 using Key = std::pair<long long, int>;
 OrderedSet<Key> ms;
 int next_id = 0;                  // IDs: [0, next_id)

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> a{3, 1, 2};
 long long sum = accumulate(a.begin(), a.end(), 0LL);
 long long pre[4]{};

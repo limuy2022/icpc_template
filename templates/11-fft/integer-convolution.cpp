@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<ll> convolution_fft(const vector<ll>& a,const vector<ll>& b) {
     if (a.empty() || b.empty()) return {};
     size_t need = a.size()+b.size()-1, n = 1;

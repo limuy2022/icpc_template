@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct RangeAddSum {
     int n;
     ll sum[4*GN+4]{}, lazy[4*GN+4]{};

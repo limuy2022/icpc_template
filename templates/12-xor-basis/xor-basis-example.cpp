@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 XorBasis basis;
 basis.insert(3); basis.insert(5); basis.insert(6);
 // all distinct results: {0,3,5,6}; 3^5^6 == 0

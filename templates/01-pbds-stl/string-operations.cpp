@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 string s = "ababa";
 auto i = s.find("ba");              // 1
 auto j = s.find("ba", 2);           // 3; search from index 2

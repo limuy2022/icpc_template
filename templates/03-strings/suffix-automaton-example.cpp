@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 static SAM sam;
 for (char c : string("ababa")) sam.extend(c);
 long long distinct = 0;

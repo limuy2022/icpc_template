@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 #include <functional>
 #include <utility>
 #include <ext/pb_ds/assoc_container.hpp>

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> palindrome_radius(string_view s, bool odd) {
     int n = (int)s.size(), even = !odd;
     vector<int> d(n);

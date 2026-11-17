@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct DSU {
     int parent[GN], size[GN];
     DSU(int n) {

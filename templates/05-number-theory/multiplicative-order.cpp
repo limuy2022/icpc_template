@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll multiplicative_order(ll a, ll m, ll phi_m,
                         const vector<ll>& prime_divisors) {
     if (gcd(a, m) != 1) return -1;

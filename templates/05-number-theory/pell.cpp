@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 optional<pair<i128,i128>> pell(ll D) {
     ll a0 = (ll)sqrtl((long double)D);
     while ((a0+1)*(a0+1) <= D) ++a0;

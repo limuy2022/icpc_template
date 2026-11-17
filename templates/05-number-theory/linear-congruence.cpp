@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 optional<pair<ll, ll>> linear_congruence(ll a, ll b, ll m) {
     a = norm(a, m); b = norm(b, m);
     ll g = gcd(a, m);

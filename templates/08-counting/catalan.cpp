@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<ll> catalan_numbers(int n,ll mod) {     // works for composite mod
     vector<ll> c(n+1);
     c[0] = 1%mod;

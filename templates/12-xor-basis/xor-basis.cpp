@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct XorBasis {
     u64 b[64]{};
     int rank = 0;

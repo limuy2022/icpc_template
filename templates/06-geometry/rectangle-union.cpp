@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct Rect { ll x1,y1,x2,y2; };
 i128 rectangle_union(const vector<Rect>& rectangles) {
     struct Event { ll x,lo,hi; int delta; };

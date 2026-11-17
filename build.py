@@ -26,6 +26,7 @@ MONO = "Courier"
 FENCE = chr(96) * 3
 INLINE = re.compile(r"(\$[^$]+\$|\x60[^\x60]+\x60)")
 CPP_INCLUDE = re.compile(r"^\[C\+\+ 源码\]\(([^)]+\.cpp)\)$")
+CPP_PREAMBLE = ["#include <bits/stdc++.h>", "using namespace std;"]
 
 
 def register_font(path):
@@ -73,7 +74,10 @@ def read_pages():
                     raise SystemExit(f"{chapter.name}:{number} 找不到模板 {include[1]}")
                 body = pages[-1][1]
                 body.append(("space", ""))
-                for cpp_line in source.read_text(encoding="utf-8").splitlines():
+                lines = source.read_text(encoding="utf-8").splitlines()
+                if lines[:2] == CPP_PREAMBLE:
+                    lines = lines[2:]
+                for cpp_line in lines:
                     body.append(("code", cpp_line.expandtabs(4)))
                 body.append(("space", ""))
             elif line.startswith(FENCE):

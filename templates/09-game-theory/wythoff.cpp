@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 bool wythoff_losing(u64 a,u64 b) {          // a,b <= 10^18
     if (a > b) swap(a,b);
     u64 k = b-a, low = 0, high = 3*k+1;

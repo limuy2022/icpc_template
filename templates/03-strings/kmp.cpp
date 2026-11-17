@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> prefix_function(string_view s) {
     int n = (int)s.size();
     vector<int> pi(n);

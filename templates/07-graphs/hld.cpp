@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct HLD {
     int n;
     int parent[GN], depth[GN], size[GN], heavy[GN];

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 OrderedSet<int> s;
 s.insert(10);
 s.insert(30);

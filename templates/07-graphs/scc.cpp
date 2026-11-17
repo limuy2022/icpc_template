@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct SCC {
     int n, components = 0;
     Graph g, rg;

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<ll> connected_labeled_graphs(int N,ll mod) {
     vector<vector<ll>> choose(N+1,vector<ll>(N+1));
     for (int n = 0; n <= N; ++n) {

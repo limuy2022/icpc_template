@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct SAM {
     struct Node {
         int go[26];

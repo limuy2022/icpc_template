@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 optional<vector<int>> bipartite_color(const Graph& g) {
     int n = g.n;
     vector<int> color(n,-1);

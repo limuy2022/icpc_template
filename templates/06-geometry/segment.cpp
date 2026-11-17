@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 bool on_segment(Point p, Point a, Point b) {
     return sgn(cross(b-a,p-a)) == 0 && sgn(dot(p-a,p-b)) <= 0;
 }

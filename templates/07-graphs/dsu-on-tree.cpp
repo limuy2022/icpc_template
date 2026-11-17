@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> subtree_distinct_colors(const Graph& g,
                                   const vector<int>& col,int C) {
     HLD h(g);

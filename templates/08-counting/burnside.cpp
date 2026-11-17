@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
     vector<ll> fac(n+1,1);
     for (int i = 1; i <= n; ++i) fac[i] = mul_mod(fac[i-1],i,p);

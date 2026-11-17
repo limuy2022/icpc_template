@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ll prime_count(ll n) {                  // n >= 0; O(sqrt(n)) states
     if (n < 2) return 0;
     vector<ll> values, g;

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 static AhoCorasick ac;
 int a = ac.insert("a"), aa = ac.insert("aa");
 int same = ac.insert("a");

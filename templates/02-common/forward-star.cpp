@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 constexpr int GN = 2005, GA = 10010; // vertices, arc slots
 template<class W = int>
 struct ForwardStar {

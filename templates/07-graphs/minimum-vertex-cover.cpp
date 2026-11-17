@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 // Call hk.solve() first; return selected left/right vertex sets.
 pair<vector<int>,vector<int>> minimum_vertex_cover(const HopcroftKarp& hk) {
     static char a[GN], b[GN];

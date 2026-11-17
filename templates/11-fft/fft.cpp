@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 using Complex = complex<long double>;
 void fft(vector<Complex>& a,bool inverse_transform) {
     size_t n = a.size();

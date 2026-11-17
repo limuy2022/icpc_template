@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 ld convex_diameter2(const vector<Point>& p) {
     int n = (int)p.size();
     if (n < 2) return 0;

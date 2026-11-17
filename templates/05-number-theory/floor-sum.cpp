@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 i128 floor_sum(ll n, ll m, ll a0, ll b0) {
     i128 a = a0, b = b0, mod = m, count = n;
     i128 qa = floor_div(a, mod), qb = floor_div(b, mod);

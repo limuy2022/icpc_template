@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<int> sg_dag(const Graph& g) {
     int n = g.n;
     static int indegree[GN], outdegree[GN];

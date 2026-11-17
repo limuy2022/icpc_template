@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 vector<long long> weights{1, 2, 3, 4};
 Huffman h(weights);
 long long answer = h.cost;             // 19

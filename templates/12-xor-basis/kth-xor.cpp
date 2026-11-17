@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 void XorBasis::ordered_vectors(u64 out[]) const {
     u64 a[64];
     copy_n(b,64,a);

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 string csv = "a,,b,";
 istringstream in(csv);
 string field, joined;

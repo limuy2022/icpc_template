@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct TwoSAT {
     int n;
     SCC graph;

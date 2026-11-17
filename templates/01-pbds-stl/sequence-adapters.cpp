@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 deque<int> d; d.push_front(1); d.push_back(2);
 d.pop_front(); d.pop_back();
 stack<int> st; st.push(1); (void)st.top(); st.pop();

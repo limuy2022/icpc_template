@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 struct Rat {
     ll p, q;
     Rat(i128 a=0,i128 b=1) {

@@ -1,3 +1,5 @@
+#include <bits/stdc++.h>
+using namespace std;
 int a[]{1, 2, 2, 5};
 auto lo = lower_bound(a, a+4, 2);  // first >= 2
 auto hi = upper_bound(a, a+4, 2);  // first > 2
