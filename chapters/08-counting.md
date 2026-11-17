@@ -1,0 +1,199 @@
+# 组合计数 · 错位排列与卡特兰数
+
+本次数学增补按 OI Wiki 对应条目整理。GNU C++17，复用第 13 页的 ll、i128、u64、u128、norm、mul_mod、pow_mod。
+
+页码：错排与卡特兰 65、有标号图 66、无标号图 67、生成树计数 68、博弈论 69-71、高斯消元 72-74、FFT 75-76。
+
+## 错位排列（没有固定点）
+
+- n 个不同元素排列，要求每个元素都不在原位置。$D_0=1$、$D_1=0$，$D_n=(n-1)(D_{n-1}+D_{n-2})$。
+- 容斥给出 $D_n=\sum_{k=0}^{n}(-1)^k\binom{n}{k}(n-k)!=n!\sum_{k=0}^{n}\frac{(-1)^k}{k!}$。
+- 另一递推 $D_n=nD_{n-1}+(-1)^n$。恰有 k 个固定点的排列数为 $\binom{n}{k}D_{n-k}$。
+- 空排列计为 1。整数精确计算时 $n\geq1$ 有 $D_n$ 等于 $n!/e$ 的最近整数；浮点近似不适合大 n 的精确答案。
+
+```cpp
+vector<ll> derangements(int n,ll mod) {        // n >= 0, mod >= 1
+    vector<ll> d(n+1);
+    d[0] = 1%mod;
+    if (n >= 1) d[1] = 0;
+    for (int i = 2; i <= n; ++i)
+        d[i] = mul_mod(i-1,norm((i128)d[i-1]+d[i-2],mod),mod);
+    return d;
+}
+```
+
+## 卡特兰数
+
+- $C_0=1$，$C_n=\sum_{i=0}^{n-1}C_iC_{n-1-i}$。
+- $C_n=\frac{1}{n+1}\binom{2n}{n}=\binom{2n}{n}-\binom{2n}{n-1}$，其中越界的组合数为 0。
+- $C_{n+1}=\frac{2(2n+1)}{n+2}C_n$。序列开头为 1、1、2、5、14、42、132。
+- 常见模型为 n 对合法括号、n 个内部节点的有序满二叉树、n+2 边形的三角剖分、n 对圆周点的不相交完美匹配。
+- n+1 个操作数的合法完全括号化有 $C_n$ 种。路径模型是从 (0,0) 到 (n,n)，只向右/上且不越过指定对角线。
+
+```cpp
+vector<ll> catalan_numbers(int n,ll mod) {     // works for composite mod
+    vector<ll> c(n+1);
+    c[0] = 1%mod;
+    for (int k = 1; k <= n; ++k)
+        for (int i = 0; i < k; ++i)
+            c[k] = norm((i128)c[k]+mul_mod(c[i],c[k-1-i],mod),mod);
+    return c;
+}
+```
+
+- 上述递推只用加乘，任意正模数适用，时间 $\mathcal{O}(n^2)$、空间 $\mathcal{O}(n)$。错排递推为 $\mathcal{O}(n)$。
+- 使用闭式模除法必须确保分母可逆。素数 p 且 $2n<p$ 时可用阶乘逆元；其他情况可用组合数差配 Lucas/exLucas。
+- 生成函数 $C(x)=1+xC(x)^2$，形式幂级数解为 $C(x)=\frac{1-\sqrt{1-4x}}{2x}$，按常数项为 1 选择分支。
+
+# 图论计数 · 有标号图与连通化
+
+默认简单无向图，无自环、无重边，顶点标号可区分。空图有一个，空图不计为连通图。
+
+## 全部图、连通图与偶度图
+
+- 全部图 $G_n=2^{\binom{n}{2}}$。连通图 $A_1=1$，$A_n=G_n-\sum_{k=1}^{n-1}\binom{n-1}{k-1}A_kG_{n-k}$。
+- 递推按包含固定顶点 1 的连通块大小 k 分类。若恰有 m 条边，全部图为 $\binom{\binom{n}{2}}{m}$，连通化还要按边数卷积。
+- 所有点度数均为偶数的图，$E_0=1$，$E_n=2^{\binom{n-1}{2}}$（n>=1）。它允许多个连通块和孤立点。
+- 连通且全偶度图的计数同样用连通化递推，将 G 换成 E。非平凡连通全偶度图具有欧拉回路。
+
+## 二分图计数的染色重数
+
+- 固定左右部大小为 a、b 时，可选边的图数为 $2^{ab}$。
+- 顶点自由分入带颜色的两侧，计数 $B_n=\sum_{k=0}^{n}\binom{n}{k}2^{k(n-k)}$。有 c 个连通块的二分图会被计入 $2^c$ 次，包括孤立点的两种染色。
+- 若普通二分图 EGF 为 H，则带颜色版本满足 $B(x)=H(x)^2$。令 $H_0=1$，有 $H_n=\frac{1}{2}\left(B_n-\sum_{k=1}^{n-1}\binom{n}{k}H_kH_{n-k}\right)$。
+- 若求连通二分图，先对 B 连通化，再除以 2。不能把所有 B_n 统一除以 2 得到任意二分图数。
+
+## 小规模连通图模板
+
+```cpp
+vector<ll> connected_labeled_graphs(int N,ll mod) {
+    vector<vector<ll>> choose(N+1,vector<ll>(N+1));
+    for (int n = 0; n <= N; ++n) {
+        choose[n][0] = choose[n][n] = 1%mod;
+        for (int k = 1; k < n; ++k)
+            choose[n][k] = norm((i128)choose[n-1][k-1]+choose[n-1][k],mod);
+    }
+    vector<ll> all(N+1), conn(N+1);
+    for (int n = 0; n <= N; ++n)
+        all[n] = pow_mod(2,(u64)n*(n ? n-1 : 0)/2,mod);
+    for (int n = 1; n <= N; ++n) {
+        conn[n] = all[n];
+        for (int k = 1; k < n; ++k) {
+            ll term = mul_mod(choose[n-1][k-1],conn[k],mod);
+            term = mul_mod(term,all[n-k],mod);
+            conn[n] = norm((i128)conn[n]-term,mod);
+        }
+    }
+    return conn;
+}
+```
+
+- 任意正模数可用，时间与空间均为 $\mathcal{O}(N^2)$。涉及二分图公式的除以 2 时，须在整数域精确除或确认 2 可逆。
+- 有标号“图=连通块的集合”，对应 EGF $G(x)=\exp(A(x))$、$A(x)=\log G(x)$，即有标号 Riddell 连通化关系。
+- 这里 EGF 系数是计数除以 n!。模数不允许 n! 求逆时，直接递推比套形式对数更稳妥。
+
+# 图论计数 · 无标号树与简单图
+
+## 无标号树、Euler 变换
+
+- 无标号有根树 OGF $T(x)=\sum_{n\geq1}t_nx^n$，满足 $T(x)=x\exp\left(\sum_{k\geq1}\frac{T(x^k)}{k}\right)$。
+- 令 $b_k=\sum_{d\mid k}d\,t_d$，$t_1=1$，则 $(n-1)t_n=\sum_{k=1}^{n-1}b_kt_{n-k}$，可用二次递推求小范围。
+- 无根树生成函数 $U(x)=T(x)-\frac{1}{2}\left(T(x)^2-T(x^2)\right)$。系数为 $u_n=t_n-\frac{1}{2}\left(\sum_{i=1}^{n-1}t_it_{n-i}-[2\mid n]t_{n/2}\right)$。
+- 有根树开头 t_1..t_6 为 1、1、2、4、9、20；无根树 u_1..u_6 为 1、1、1、2、3、6。
+- 一般 Euler 变换为 $\prod_{i\geq1}(1-x^i)^{-a_i}=\exp\left(\sum_{k\geq1}\frac{A(x^k)}{k}\right)$。若变换结果系数为 h_n、h_0=1，则 $nh_n=\sum_{i=1}^{n}b_ih_{n-i}$，$b_i=\sum_{d\mid i}da_d$。
+
+## 无标号简单图的 Burnside 计数
+
+- 按顶点置换的循环类型分类。m_i 为长度 i 的循环个数，$\sum_i im_i=n$，同类型置换数为 $n!/z$，$z=\prod_i i^{m_i}m_i!$。
+- 在无序边集合上产生的轨道数为 $q=\sum_i m_i\lfloor i/2\rfloor+\sum_i i\binom{m_i}{2}+\sum_{i<j}m_im_j\gcd(i,j)$。
+- 每个边轨道统一决定有边/无边，固定图数为 $2^q$，无标号简单图数为 $\sum_{(m_i)}2^q/z$。边做 c 种颜色时换成 $c^q$。
+
+```cpp
+ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
+    vector<ll> fac(n+1,1);
+    for (int i = 1; i <= n; ++i) fac[i] = mul_mod(fac[i-1],i,p);
+    vector<int> cycles;
+    ll answer = 0;
+    auto dfs = [&](auto&& self,int left,int smallest) -> void {
+        if (left == 0) {
+            ll orbit = 0, z = 1;
+            vector<int> count(n+1);
+            for (int i = 0; i < (int)cycles.size(); ++i) {
+                int a = cycles[i]; ++count[a]; z = mul_mod(z,a,p);
+                orbit += a/2;
+                for (int j = 0; j < i; ++j) orbit += gcd(a,cycles[j]);
+            }
+            for (int c : count) z = mul_mod(z,fac[c],p);
+            ll term = mul_mod(pow_mod(2,orbit,p),pow_mod(z,p-2,p),p);
+            answer = norm((i128)answer+term,p); return;
+        }
+        for (int a = smallest; a <= left; ++a) {
+            cycles.push_back(a); self(self,left-a,a); cycles.pop_back();
+        }
+    };
+    dfs(dfs,n,1);
+    return answer;
+}
+```
+
+- 枚举整数分拆，适合较小 n。空图返回 1；n=1..5 的无标号简单图数为 1、2、4、11、34。
+- 模板要求 p 为素数且 p>n，使 z 可逆。整数公式中的除法、树计数中的 (n-1) 与 2，都要先核对模数条件。
+- 无标号计数按图同构去重。给每个顶点先贴上不同编号后直接相加会重复计数。
+
+# 图论计数 · 生成树与矩阵树定理
+
+## Cayley、Prüfer 与最小生成树计数
+
+- n>=2 时，有标号无根树为 $n^{n-2}$，有根树为 $n^{n-1}$；n=1 时两者均为 1。
+- 给定度数 d_i>=1 且总和为 2n-2，树数为 $\frac{(n-2)!}{\prod_i(d_i-1)!}$。Prüfer 序列长 n-2，点 i 恰出现 d_i-1 次。
+- 完全二分图 $K_{a,b}$ 的生成树数为 $a^{b-1}b^{a-1}$，a,b>=1。包含给定森林的树数为 $n^{c-2}\prod_i s_i$（c>=2），s_i 是各连通块大小。
+- 最小生成树计数按边权分组。用并查集收缩更小权边，在本组多重图的每个连通块上求生成树数，相乘后再统一合并本组边。
+
+## Matrix-Tree，素数模行列式
+
+无向图拉普拉斯 $L=D-A$，删去任意同一行列得到余子式，其行列式为生成树数。重边权相加，自环不贡献生成树。
+
+```cpp
+ll determinant_mod(vector<vector<ll>> a,ll p) { // square; p prime
+    int n = (int)a.size();
+    for (auto& row : a) for (ll& x : row) x = norm(x,p);
+    ll answer = 1%p;
+    for (int col = 0; col < n; ++col) {
+        int pivot = col;
+        while (pivot < n && a[pivot][col] == 0) ++pivot;
+        if (pivot == n) return 0;
+        if (pivot != col) { swap(a[pivot],a[col]); answer = norm(-answer,p); }
+        ll value = a[col][col], inv = pow_mod(value,p-2,p);
+        answer = mul_mod(answer,value,p);
+        for (int i = col+1; i < n; ++i) {
+            ll factor = mul_mod(a[i][col],inv,p);
+            for (int j = col+1; j < n; ++j)
+                a[i][j] = norm((i128)a[i][j]-mul_mod(factor,a[col][j],p),p);
+            a[i][col] = 0;
+        }
+    }
+    return answer;
+}
+ll spanning_tree_count(const ForwardStar<ll>& g,ll p) {
+    int n = g.n;
+    if (n == 0) return 0;
+    int k = n-1;
+    vector<vector<ll>> a(k,vector<ll>(k));
+    for (int u = 0; u < k; ++u) {
+        for (int id = g.head[u]; id; id = g.line[id].next) {
+            int v = g.line[id].v;
+            ll w = g.line[id].val;
+            if (u == v) continue;
+            a[u][u] = norm((i128)a[u][u]+w,p);
+            if (v < k) a[u][v] = norm((i128)a[u][v]-w,p);
+        }
+    }
+    return determinant_mod(a,p);
+}
+```
+
+- 每条无向边用 add_undirected(u,v,w) 加入，无权边传 w=1。加权答案为所有生成树的边权乘积之和。n=1 的空余子式行列式为 1，非连通图为 0。
+- 时间 $\mathcal{O}(n^3+m)$。该消元模板限素数模，合数模的非零主元可能不可逆，需用整数消元或其他行列式算法。
+- 有向图朝根汇聚的树用出度拉普拉斯 D_out-A；从根向外的树用入度拉普拉斯 D_in-A^T，删根的行列。
+- BEST 定理，强连通有向欧拉图中，固定起始边的欧拉回路数为 $t_w\prod_v(\deg^+(v)-1)!$，t_w 是朝起点 w 汇聚的树数，边可区分。
+- 若只固定起始点而不固定第一条边，另乘起点出度；循环旋转等价、不可区分重边等计数约定需要另外调整。

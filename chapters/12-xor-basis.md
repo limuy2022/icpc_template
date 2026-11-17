@@ -1,0 +1,113 @@
+# 线性代数 · 异或线性基
+
+将 64 位无符号整数视为 GF(2) 上的向量，加法为按位异或。复用 u64=unsigned long long、u128=__uint128_t。
+
+## 插入、表示性、最大与最小异或
+
+b[i] 的最高有效位是 i。rank 是独立向量个数，dependent 记录原始输入中是否存在非空子集异或为 0。
+
+```cpp
+struct XorBasis {
+    u64 b[64]{};
+    int rank = 0;
+    bool dependent = false;
+    bool insert(u64 x) {
+        for (int i = 63; i >= 0; --i) if ((x>>i)&1ULL) {
+            if (!b[i]) { b[i] = x; ++rank; return true; }
+            x ^= b[i];
+        }
+        dependent = true;
+        return false;
+    }
+    bool contains(u64 x) const {
+        for (int i = 63; i >= 0; --i) if ((x>>i)&1ULL) {
+            if (!b[i]) return false;
+            x ^= b[i];
+        }
+        return true;
+    }
+    u64 max_xor(u64 seed=0) const {
+        for (int i = 63; i >= 0; --i) seed = max(seed,seed^b[i]);
+        return seed;
+    }
+    u64 min_xor(u64 seed=0) const {
+        for (int i = 63; i >= 0; --i) seed = min(seed,seed^b[i]);
+        return seed;
+    }
+    void merge(const XorBasis& other) {
+        dependent = dependent || other.dependent;
+        for (u64 x : other.b) if (x) insert(x);
+    }
+    void ordered_vectors(u64 out[]) const;
+    optional<u64> kth(u128 k,bool nonempty=false) const;
+};
+```
+
+- insert 返回是否增加秩。插入 0 或重复/相关向量会返回 false，并使 dependent=true；输入是否被记录不能只看返回值。
+- contains(0) 总为 true，因为允许空集。max_xor(seed) 求 seed 与任意子集异或后的最大值，min_xor 同理。
+- 所有比较按无符号大小进行，第 63 位也参与比较。使用 1ULL 或 u64 移位，避免有符号符号位导致错误。
+- 基本操作 $\mathcal{O}(B)$，B=64；合并 $\mathcal{O}(B^2)$。merge 把两组输入按不同输入位置合并，相同数值按两次输入计。
+
+## 秩、计数与边界
+
+- 插入 n 个数得到秩 r，允许空集时共有 $2^r$ 个不同异或值，每个值对应 $2^{n-r}$ 个子集。
+- 非空子集能否异或成 0，取决于 dependent。有相关性时有 $2^r$ 个不同非空结果，否则有 $2^r-1$ 个。
+- r=64 时不同值个数为 $2^{64}$，计数使用 u128。不能写 `1ULL<<64`。
+- 清空可重新赋值 `basis=XorBasis{};`。普通线性基无法通过直接清掉某个主元来删除一条原始输入。
+
+# 线性代数 · 第 k 小异或值
+
+## 消去低位主元，按数值升序枚举不同结果
+
+先按主元从低到高消去其他基向量的低位主元，再将非零基向量按主元升序收集。k 的二进制位对应选择哪些向量。
+
+```cpp
+void XorBasis::ordered_vectors(u64 out[]) const {
+    u64 a[64];
+    copy_n(b,64,a);
+    for (int i = 0; i < 64; ++i) if (a[i])
+        for (int j = 0; j < i; ++j)
+            if ((a[i]>>j)&1ULL) a[i] ^= a[j];
+    int used = 0;
+    for (u64 x : a) if (x) out[used++] = x;
+}
+optional<u64> XorBasis::kth(u128 k,bool nonempty) const {
+    u128 total = (u128)1<<rank;
+    bool skip_zero = nonempty && !dependent;
+    if (k >= total-(u128)skip_zero) return nullopt;
+    k += (u128)skip_zero;
+    u64 a[64];
+    ordered_vectors(a);
+    u64 answer = 0;
+    for (int i = 0; i < rank; ++i)
+        if ((k>>i)&(u128)1) answer ^= a[i];
+    return answer;
+}
+```
+
+- k 从 0 开始，枚举的是不同异或值。题目若从 1 开始，先检查 k>=1，再传 k-1；越界返回空值。
+- 默认允许空集，k=0 得到 0。nonempty=true 时，仅在不存在非空零异或时跳过 0。
+- 原始输入有相关性时，0 可以由非空子集取得；此时不能为了“非空”而无条件删去第一个结果。
+- 单次 kth 包含重建，时间 $\mathcal{O}(B^2)$。大量查询可先用 ordered_vectors(out) 把前 rank 项写入长 64 的数组，然后每次按 k 的位异或，降为 $\mathcal{O}(B)$。
+- r>0 时 out[0] 是最小非零结果。r=0 时没有非零结果。
+
+## 使用例子
+
+```cpp
+XorBasis basis;
+basis.insert(3); basis.insert(5); basis.insert(6);
+// all distinct results: {0,3,5,6}; 3^5^6 == 0
+bool can = basis.contains(7);             // false
+auto first = basis.kth(0,true);           // 0, from a nonempty subset
+auto third = basis.kth(2);                // 5
+u64 largest = basis.max_xor();            // 6
+```
+
+## 使用线性基时的约束
+
+- kth 与基向量系数是从小到大的数值对应，依赖上面的消元形式；原始插入数组不能直接用 k 的位枚举并声称有序。
+- 求最大权线性无关子集，可按权值降序处理，仅在权值非负且增加秩时选取；要求最大权满秩基时还须加入必要的负权向量。
+- 表示性只回答是否存在子集。若需要恢复具体原下标，插入时须同步维护每个主元的组合信息，消元时一起异或。
+- 需要区间、删除、回滚等功能时，要额外记录位置或历史。合并线性基只保留张成空间与此处的非空零信息，不保留各原输入的身份。
+
+来源范围参考 OI Wiki Team 的线性基条目，按赛场用途重新组织。整理日期 2026-11-05。

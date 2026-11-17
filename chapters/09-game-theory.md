@@ -1,0 +1,151 @@
+# 博弈论 · 公平组合游戏与 SG
+
+## 正常规则、必胜必败与 Nim 和
+
+- 双方轮流、完全信息、无随机，双方在同一局面可选操作相同，且游戏有限，称这里讨论的公平组合游戏。正常规则为不能行动者负。
+- 终止局面是 P（先手必败）；能走到 P 的是 N（先手必胜）；全部后继都是 N 的局面是 P。
+- $\mathrm{SG}(u)=\operatorname{mex}\{\mathrm{SG}(v):u\to v\}$，mex 是未出现的最小非负整数，终止点 SG=0。
+- 独立游戏之和每步只选一个子游戏行动，SG 值为各子游戏 SG 的按位异或；总异或为 0 则必败。
+
+## 有向无环状态图的 SG 模板
+
+```cpp
+vector<int> sg_dag(const Graph& g) {
+    int n = g.n;
+    static int indegree[GN], outdegree[GN];
+    fill_n(indegree,n,0); fill_n(outdegree,n,0);
+    vector<int> order;
+    for (int u = 0; u < n; ++u) {
+        for (int id = g.head[u]; id; id = g.line[id].next) {
+            ++indegree[g.line[id].v];
+            ++outdegree[u];
+        }
+    }
+    queue<int> q;
+    for (int u = 0; u < n; ++u) if (indegree[u] == 0) q.push(u);
+    while (!q.empty()) {
+        int u = q.front(); q.pop(); order.push_back(u);
+        for (int id = g.head[u]; id; id = g.line[id].next) {
+            int v = g.line[id].v;
+            if (--indegree[v] == 0) q.push(v);
+        }
+    }
+    vector<int> sg(n);
+    static int seen[GN+1];
+    fill_n(seen,n+1,0);
+    for (auto it = order.rbegin(); it != order.rend(); ++it) {
+        int u = *it, degree = outdegree[u];
+        int stamp = (int)(it-order.rbegin())+1;
+        for (int id = g.head[u]; id; id = g.line[id].next) {
+            int v = g.line[id].v;
+            seen[sg[v]] = stamp;
+        }
+        while (sg[u] <= degree && seen[sg[u]] == stamp)
+            ++sg[u];
+    }
+    return sg;
+}
+```
+
+- mex 不超过不同后继的数量，因此 seen 按点数分配。总时间与空间为 $\mathcal{O}(V+E)$；输入必须是 DAG，每条边表示合法的一步操作。
+- 求游戏和的 SG 时对 SG 数值做异或，不能仅对“是否必胜”的布尔值异或。
+- 构造获胜操作，设总异或 X，找到某一子游戏从 SG=s 能走到 s^X，使新的总异或为 0。
+
+## Nim
+
+- 每堆可取任意正数石子，每步只能取一堆。单堆 SG 等于石子数，局面败当且仅当所有堆大小异或为 0。
+- X!=0 时找一堆 a，使 $a\operatorname{xor}X<a$，把它减少到 a xor X。该堆必存在。
+- 有环、随机操作、取走最后一颗者负、玩家可选操作不同等变化，需重新建模并检查 SG 定理的前提。
+
+# 博弈论 · 常见取石子模型
+
+## Bachet / Bash 与减法游戏
+
+- 一堆 n 颗，每步取 1..m 颗，取尽获胜。P 局面满足 $n\equiv0\; (\mathrm{mod}\ m+1)$，SG=n mod (m+1)。
+- 操作集合是任意有限集合 S 时，$\mathrm{SG}(n)=\operatorname{mex}\{\mathrm{SG}(n-s):s\in S,s\leq n\}$，按 n 递推。
+- 减法游戏可能出现最终周期，必须证明或可靠识别“足够长的状态窗口”后再利用，不能仅凭前几项猜周期。
+
+## 反常 Nim（取尽者负）
+
+- 若所有非空堆均只有一颗，奇数堆是 P、偶数堆是 N。若至少一堆超过一颗，P 当且仅当普通 Nim 异或为 0。
+- 仅有一个大堆时，将其减少到 0 或 1，使对手面对奇数个一颗堆。至少两个大堆时按普通 Nim 策略处理。
+- 反常规则的游戏和不能直接套正常规则 SG 异或。需要结合具体游戏重新分析末局。
+
+## Wythoff，两堆可单取或同取
+
+- 每步从一堆取任意正数，或两堆取相同正数，取尽获胜。设 a<=b、k=b-a，P 局面为 $a=\lfloor k\varphi\rfloor$，$\varphi=\frac{1+\sqrt{5}}{2}$。
+- 大整数时直接乘浮点黄金比可能向下取整错误。可用 $\lfloor k\varphi\rfloor=\left\lfloor\frac{k+\lfloor\sqrt{5k^2}\rfloor}{2}\right\rfloor$ 做精确判定。
+
+```cpp
+bool wythoff_losing(u64 a,u64 b) {          // a,b <= 10^18
+    if (a > b) swap(a,b);
+    u64 k = b-a, low = 0, high = 3*k+1;
+    u128 target = (u128)5*k*k;
+    while (low+1 < high) {
+        u64 mid = low+(high-low)/2;
+        if ((u128)mid*mid <= target) low = mid;
+        else high = mid;
+    }
+    return a == (k+low)/2;
+}
+```
+
+## 阶梯 Nim、Fibonacci Nim 与扩展
+
+- 阶梯 Nim，石子每步从某一层向下一层移动任意正数，第一层可移出，最底层编号为 1。奇数层石子数异或为 0 时是 P。
+- Fibonacci Nim，一堆石子，首步不能取完，后续至多取前一步数量的两倍。初始 P 局面为 Fibonacci 数。
+- 将剩余数量写成互不相邻 Fibonacci 数之和（Zeckendorf 表示），当前可取上限不小于最小项时为 N，可取该最小项；否则为 P。
+- Moore Nim-k 每次可减少 1..k 堆。把堆大小写成二进制，所有数位的 1 的堆数均能被 k+1 整除时为 P，否则为 N；该判定量不能直接视为一般 k 下的 SG 值。
+- 翻硬币与图上移动游戏应先明确一次改变哪些位置、是否可重复访问状态，再决定能否拆为独立子游戏。
+
+# 博弈论 · 零和、非公平与带环局面
+
+## Minimax 与分数差 DP
+
+- 序贯零和游戏可维护“当前玩家最终得分减对手得分”。选动作后轮到对手，转移通常形如 $F(s)=\max_{s\to t}(\mathrm{gain}(s,t)-F(t))$。
+- 两端取数，$F(l,r)=\max(a_l-F(l+1,r),a_r-F(l,r-1))$。空区间为 0，边界不能把轮次重复翻转。
+- Alpha-Beta 在 Minimax 上维护当前窗口并剪去不影响答案的分支；访问顺序影响剪枝效果，最坏复杂度仍可为指数级。
+
+## 同时零和与非公平游戏
+
+- 收益矩阵 A，行玩家最大化、列玩家最小化。混合策略满足 $\max_p\min_q p^TAq=\min_q\max_p p^TAq$，p,q 为概率分布。
+- 行玩家可解线性规划，最大化 v，约束每列 $\sum_i p_iA_{ij}\geq v$、$p_i\geq0$、$\sum_i p_i=1$。
+- 2×2 收益 [[a,b],[c,d]]，若内部混合解有效，令 $\Delta=a-b-c+d$，行第一项概率 $\frac{d-c}{\Delta}$，列第一项概率 $\frac{d-b}{\Delta}$，值 $\frac{ad-bc}{\Delta}$。先检查 Δ!=0 与概率范围。
+- 非公平游戏双方操作集合不同，可记作 $G=\{G^L\mid G^R\}$。正常规则下有 L/R/N/P 四类结果，不能普遍用单个 SG 数表示。L/R 表示左/右玩家无论先后都胜，N/P 表示先/后行动者胜。
+
+## 带环状态图，逆向求胜负与平局
+
+每条边表示一次轮流行动，终点无路可走者负。若动作依赖玩家，状态中必须包含“当前玩家”。返回 -1 败、1 胜、0 平局。
+
+```cpp
+vector<int> game_outcomes(const Graph& g) {
+    int n = g.n;
+    static Graph reverse(0);
+    reverse.init(n);
+    static int remain[GN];
+    fill_n(remain,n,0);
+    vector<int> result(n);
+    queue<int> q;
+    for (int u = 0; u < n; ++u) {
+        for (int id = g.head[u]; id; id = g.line[id].next) {
+            int v = g.line[id].v;
+            reverse.add(v,u);
+            ++remain[u];
+        }
+        if (remain[u] == 0) { result[u] = -1; q.push(u); }
+    }
+    while (!q.empty()) {
+        int v = q.front(); q.pop();
+        for (int id = reverse.head[v]; id; id = reverse.line[id].next) {
+            int u = reverse.line[id].v;
+            if (result[u] != 0) continue;
+            if (result[v] == -1) { result[u] = 1; q.push(u); }
+            else if (--remain[u] == 0) { result[u] = -1; q.push(u); }
+        }
+    }
+    return result;
+}
+```
+
+- 能到必败后继则胜，全部后继都胜则败。剩余未定点可双方避免必败而无限行动，按此规则判平局。
+- 时间与空间 $\mathcal{O}(V+E)$。若题目规定重复局面输、限制步数或禁止走回头路，需要把相应信息并入状态。
