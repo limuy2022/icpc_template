@@ -1,4 +1,3 @@
-import sys
 from random import choice, randint, sample, shuffle
 
 
@@ -35,13 +34,9 @@ def graph_case():
     return f"{n} {m}\n" + "".join(f"{u} {v}\n" for u, v in edges)
 
 
-CASES = dict(array=array_case, perm=permutation_case, string=string_case,
-             tree=tree_case, graph=graph_case)
-
-
-def make_case(kind="array"):
-    return CASES[kind]()
+def make_case():
+    return ""
 
 
 if __name__ == "__main__":
-    print(make_case(*sys.argv[1:]), end="")
+    print(make_case())
