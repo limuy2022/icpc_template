@@ -7,6 +7,6 @@ int main() { // PDF: body
     int a = ac_insert("a"), aa = ac_insert("aa");
     int same = ac_insert("a");
     ac_build();
-    auto cnt = ac_count("aaa");          // cnt[a] = 3, cnt[aa] = 2
-    // cnt[same] == cnt[a]; repeated patterns share an endpoint
+    ac_count("aaa");                   // ac_occ[a] = 3, ac_occ[aa] = 2
+    // ac_occ[same] == ac_occ[a]; repeated patterns share an endpoint
 }

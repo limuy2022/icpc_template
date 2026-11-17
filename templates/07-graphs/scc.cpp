@@ -9,29 +9,32 @@ void scc_build() {
     int n = scc_g.n;
     static char seen[GN];
     fill_n(seen,n,0);
-    vector<int> order;
+    static int order[GN], stack[GN], arc[GN];
+    int done = 0;
     for (int root = 0; root < n; ++root) if (!seen[root]) {
-        vector<pair<int,int>> st{{root,scc_g.head[root]}}; seen[root] = true;
-        while (!st.empty()) {
-            int u = st.back().first;
-            int& i = st.back().second;
+        int size = 1; stack[0] = root; arc[0] = scc_g.head[root];
+        seen[root] = true;
+        while (size) {
+            int u = stack[size-1], &i = arc[size-1];
             if (i) {
                 int v = scc_g.line[i].v; i = scc_g.line[i].next;
-                if (!seen[v]) { seen[v] = true; st.push_back({v,scc_g.head[v]}); }
-            } else { order.push_back(u); st.pop_back(); }
+                if (!seen[v]) {
+                    seen[v] = true; stack[size] = v; arc[size++] = scc_g.head[v];
+                }
+            } else { order[done++] = u; --size; }
         }
     }
     fill_n(scc_id,n,-1); scc_count = 0;
-    for (auto it = order.rbegin(); it != order.rend(); ++it) {
-        int root = *it;
+    while (done) {
+        int root = order[--done];
         if (scc_id[root] != -1) continue;
-        vector<int> st{root}; scc_id[root] = scc_count;
-        while (!st.empty()) {
-            int u = st.back(); st.pop_back();
+        int size = 1; stack[0] = root; scc_id[root] = scc_count;
+        while (size) {
+            int u = stack[--size];
             for (int id = scc_rg.head[u]; id; id = scc_rg.line[id].next) {
                 int v = scc_rg.line[id].v;
                 if (scc_id[v] != -1) continue;
-                scc_id[v] = scc_count; st.push_back(v);
+                scc_id[v] = scc_count; stack[size++] = v;
             }
         }
         ++scc_count;

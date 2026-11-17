@@ -29,15 +29,16 @@ void build_hld(const Graph& g,int root = 0) {
         }
     }
     int timer = 0;
-    vector<pair<int,int>> tasks{{root,root}};
-    while (!tasks.empty()) {
-        auto [u,chain] = tasks.back(); tasks.pop_back();
+    static int tasks[GN];
+    int pending = 0; tasks[pending++] = root;
+    while (pending) {
+        int u = tasks[--pending], chain = u;
         for (; u != -1; u = son[u]) {
             top[u] = chain; pos[u] = timer; rev[timer++] = u;
             for (int id = g.head[u]; id; id = g.line[id].next) {
                 int v = g.line[id].v;
                 if (fa[v] == u && v != son[u])
-                    tasks.push_back({v,v});
+                    tasks[pending++] = v;
             }
         }
     }

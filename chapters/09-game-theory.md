@@ -9,6 +9,8 @@
 
 ## 有向无环状态图的 SG 模板
 
+调用 sg_dag(g) 后，sg[u] 为状态 u 的 SG 值。
+
 [C++ 源码](../templates/09-game-theory/sprague-grundy.cpp)
 
 - mex 不超过不同后继的数量，因此 seen 按点数分配。总时间与空间为 $\mathcal{O}(V+E)$；输入必须是 DAG，每条边表示合法的一步操作。
@@ -67,7 +69,7 @@
 
 ## 带环状态图，逆向求胜负与平局
 
-每条边表示一次轮流行动，终点无路可走者负。若动作依赖玩家，状态中必须包含“当前玩家”。返回 -1 败、1 胜、0 平局。
+每条边表示一次轮流行动，终点无路可走者负。若动作依赖玩家，状态中必须包含“当前玩家”。调用 game_outcomes(g) 后，outcome[u] 为 -1 败、1 胜或 0 平局。
 
 [C++ 源码](../templates/09-game-theory/cyclic-game.cpp)
 

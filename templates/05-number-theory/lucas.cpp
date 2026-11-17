@@ -1,8 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
 // fac/ifac have indices 0..p-1; p is prime and small enough to store.
-ll lucas(u64 n, u64 k, ll p, const vector<ll>& fac,
-         const vector<ll>& ifac) {
+ll lucas(u64 n, u64 k, ll p, const ll fac[],
+         const ll ifac[]) {
     ll ans = 1;
     while (n || k) {
         ll a = n % p, b = k % p;

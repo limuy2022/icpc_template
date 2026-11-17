@@ -12,7 +12,7 @@
 
 [C++ 源码](../templates/07-graphs/tree-centroid.cpp)
 
-- 输入为无自环、无重边的连通无向树，每条边用 add_undirected 加入。模板迭代求解，时间与空间均为 $\mathcal{O}(n)$。
+- 输入为无自环、无重边的连通无向树，每条边用 add_undirected 加入。tree_centroids(g) 返回个数，编号写入 centroid。时间与空间均为 $\mathcal{O}(n)$。
 - 带非负点权时，将大小改为权值和，条件改为每块权值不超过总权一半。负点权不满足这些结论。
 - 换根求距离和，根答案为深度总和，从 u 到子节点 v 有 $F(v)=F(u)+n-2\mathrm{size}[v]$。
 
@@ -57,7 +57,7 @@
 
 ## DSU on Tree，统计每个子树的不同颜色数
 
-函数内部调用 build_hld(g)，复用 sub、son、pos、rev。颜色需预先离散化到 $[0,C)$，col.size() 与点数相同，C 不超过 GN。
+函数内部调用 build_hld(g)，复用 sub、son、pos、rev。颜色需预先离散化到 $[0,C)$，col 有 g.n 项，C 不超过 GN。答案写入 subtree_colors。
 
 [C++ 源码](../templates/07-graphs/dsu-on-tree.cpp)
 
@@ -127,7 +127,7 @@
 
 ## 边双连通分量
 
-删掉全部桥后，剩下图的连通块就是边双分量。先对同一张图调用 build_cuts(g)。
+删掉全部桥后，剩下图的连通块就是边双分量。先对同一张图调用 build_cuts(g)。edge_bcc(g) 返回分量数，编号写入 ebcc_id。
 
 [C++ 源码](../templates/07-graphs/edge-bcc.cpp)
 
@@ -169,7 +169,7 @@
 - 恰好一个为真，加入上述两个子句。相等 $x_i=x_j$，加入两个方向的蕴含。
 - 强制 x_i=true 用 force(i,true)。形如“不能同时选择状态 a,b”用 add_or(i,!a,j,!b)。
 - “至少三个里一个为真”不是一般 2-CNF 子句。不能仅凭引入一个变量就无条件转成等价 2-SAT。
-- solve_2sat(n) 返回一组可行解，题目要求字典序最小解时还需要额外处理。
+- solve_2sat(n) 返回是否有解。有解时读 sat_value，题目要求字典序最小解时还需要额外处理。
 
 ## 例子
 
@@ -191,7 +191,7 @@
 
 ## Kuhn，逐个左点找增广路
 
-左部用 Graph(L) 建链式前向星，只加左到右的边。左、右各自从 0 编号，R 不超过 GN。返回最大匹配数及右点匹配到的左点，-1 表示未匹配。
+左部用 Graph(L) 建链式前向星，只加左到右的边。左、右各自从 0 编号，R 不超过 GN。返回最大匹配数。kuhn_match[v] 为右点 v 匹配到的左点，-1 表示未匹配。
 
 [C++ 源码](../templates/07-graphs/kuhn.cpp)
 
@@ -206,7 +206,7 @@
 
 [C++ 源码](../templates/07-graphs/bipartite-color.cpp)
 
-- 无向图为二分图当且仅当没有奇环。自环直接破坏二分性，重边不影响判定。时间 $\mathcal{O}(n+m)$。
+- 无向图为二分图当且仅当没有奇环。自环直接破坏二分性，重边不影响判定。调用 bipartite_color(g) 判定，有解时读 color。时间 $\mathcal{O}(n+m)$。
 - 一般图的匹配不能直接使用二分图算法。给定固定左右部时，先核对每条边都跨越左右部。
 
 ## 最小点覆盖与最大独立集
@@ -225,7 +225,7 @@
 
 ## 最小费用矩形指派
 
-用 ForwardStar<ll>(n) 建左到右的带权边，右部有 m 点且 m 不超过 GN 和 KM_CAP。要求 $n\leq m$，每行选一个不同的列，求最小总费用。返回总费用与每行所选列。
+用 ForwardStar<ll>(n) 建左到右的带权边，右部有 m 点且 m 不超过 GN 和 KM_CAP。要求 $n\leq m$，每行选一个不同的列，求最小总费用。返回总费用，每行所选列写入 assignment。
 
 [C++ 源码](../templates/07-graphs/hungarian.cpp)
 

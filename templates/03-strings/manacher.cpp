@@ -1,8 +1,10 @@
 #include <bits/stdc++.h>
 using namespace std;
-vector<int> palindrome_radius(string_view s, bool odd) {
+constexpr int MAN_CAP = 200005;
+int rad[2][MAN_CAP];                        // 0: even, 1: odd
+void palindrome_radius(string_view s, bool odd) {
     int n = (int)s.size(), even = !odd;
-    vector<int> d(n);
+    int* d = rad[odd];
     for (int i = 0, l = 0, r = -1; i < n; ++i) {
         int k = i > r ? (int)odd
                       : min(d[l + (r - i) + even], r - i + 1);
@@ -11,5 +13,4 @@ vector<int> palindrome_radius(string_view s, bool odd) {
         d[i] = k;
         if (i + k - 1 > r) { l = i - k + odd; r = i + k - 1; }
     }
-    return d;
 }

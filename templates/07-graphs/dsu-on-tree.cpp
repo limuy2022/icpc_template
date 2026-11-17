@@ -1,12 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
-vector<int> subtree_distinct_colors(const Graph& g,
-                                  const vector<int>& col,int C) {
+int subtree_colors[GN];
+void subtree_distinct_colors(const Graph& g,const int col[],int C) {
     build_hld(g);
     int n = g.n;
     static int count[GN];
     fill_n(count,C,0);
-    vector<int> answer(n);
     int distinct = 0;
     auto add_vertex = [&](int u,int delta) {
         int c = col[u];
@@ -29,9 +28,8 @@ vector<int> subtree_distinct_colors(const Graph& g,
             if (fa[v] == u && v != son[u]) add_subtree(v,1);
         }
         add_vertex(u,1);
-        answer[u] = distinct;
+        subtree_colors[u] = distinct;
         if (!keep) add_subtree(u,-1);
     };
     if (n) dfs(dfs,0,false);
-    return answer;
 }

@@ -36,16 +36,16 @@ void ac_build() {
         }
     }
 }
-vector<long long> ac_count(string_view text) {
-    vector<long long> cnt(ac_sz);
+long long ac_occ[AC_CAP];
+void ac_count(string_view text) {
+    fill_n(ac_occ,ac_sz,0);
     int u = 0;
     for (char ch : text) {
         u = ac[u].go[ch - 'a'];
-        ++cnt[u];
+        ++ac_occ[u];
     }
     for (int i = ac_used - 1; i >= 0; --i) {
         int v = ac_order[i];
-        cnt[ac[v].fail] += cnt[v];
+        ac_occ[ac[v].fail] += ac_occ[v];
     }
-    return cnt;
 }

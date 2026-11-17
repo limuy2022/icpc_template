@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
-pair<ll,vector<int>> hungarian(const ForwardStar<ll>& g,int m) {
+int assignment[GN];
+ll hungarian(const ForwardStar<ll>& g,int m) {
     int n = g.n;
     constexpr int KM_CAP = 505;
     static ll cost[KM_CAP][KM_CAP];
@@ -39,8 +40,7 @@ pair<ll,vector<int>> hungarian(const ForwardStar<ll>& g,int m) {
             p[j0] = p[previous]; j0 = previous;
         } while (j0 != 0);
     }
-    vector<int> assignment(n,-1);
     for (int j = 1; j <= m; ++j)
         if (p[j]) assignment[p[j]-1] = j-1;
-    return {-v[0],assignment};
+    return -v[0];
 }

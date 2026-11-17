@@ -1,11 +1,12 @@
 #include <bits/stdc++.h>
 using namespace std;
-vector<int> tree_centroids(const Graph& g) {
+int centroid[2];
+int tree_centroids(const Graph& g) {
     int n = g.n;
-    if (n == 0) return {};
+    if (n == 0) return 0;
     static int parent[GN], size[GN], order[GN];
     fill_n(size,n,1);
-    vector<int> answer;
+    int found = 0;
     int used = 1; order[0] = 0;
     parent[0] = 0;
     for (int i = 0; i < used; ++i) {
@@ -24,7 +25,7 @@ vector<int> tree_centroids(const Graph& g) {
             size[u] += size[v]; largest = max(largest,size[v]);
         }
         largest = max(largest,n-size[u]);
-        if (largest <= n/2) answer.push_back(u);
+        if (largest <= n/2) centroid[found++] = u;
     }
-    return answer;
+    return found;
 }

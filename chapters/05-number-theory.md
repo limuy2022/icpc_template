@@ -131,7 +131,7 @@
 
 [C++ 源码](../templates/05-number-theory/linear-sieve.cpp)
 
-- 调用 linear_sieve(n)，n 不超过 SIEVE_MAX。
+- 调用 linear_sieve(n)，n 不超过 SIEVE_MAX。质数表只用 primes 的前 prime_cnt 项。
 - Eratosthenes 从$p^{2}$开始标记，$\mathcal{O}(N \log  \log  N)$。线性筛每个合数由其最小素因子产生一次，$\mathcal{O}(N)$。
 - 分段筛 [L,R] 先筛到$\sqrt{R}$，对每个 p 从$\max (p^{2},\left\lceil L/p\right\rceilp)$标记。单独排除 0、1，不能把 p 自身筛掉。
 - 只筛奇数可省空间。bitset/位压缩适合只需要素性。lp 数组支持$\mathcal{O}(\log  n)$次除法分解范围内的数。

@@ -1,29 +1,29 @@
 # 字符串算法 · KMP、Z 函数、Manacher
 
-示例使用 GNU C++17，函数返回的数组与匹配位置均为 0-based。
+示例使用 GNU C++17，数组下标和匹配位置均从 0 开始。KMP 的模式串上限为 KMP_CAP，Z 和 Manacher 的串长上限分别为 Z_CAP、MAN_CAP。
 
 ## 01 · KMP，找模式串的所有出现位置
 
 [C++ 源码](../templates/03-strings/kmp.cpp)
 
-- `pi[i]` 是前缀 `s[0..i]` 的最长相等真前后缀长度。KMP 时间$\mathcal{O}(n + m)$，匹配后回退以保留重叠结果。
+- prefix_function(s) 把结果写入 pi。 `pi[i]` 是前缀 `s[0..i]` 的最长相等真前后缀长度。KMP 时间$\mathcal{O}(n + m)$，匹配后回退以保留重叠结果。
 
 ## 02 · Z 函数，求每个后缀与整串的最长公共前缀
 
 [C++ 源码](../templates/03-strings/z-function.cpp)
 
-- 维护匹配区间 `[l, r)`，时间$\mathcal{O}(n)$。若用 `pat + sep + text` 匹配，分隔符必须在两串中都未出现。
+- z_function(s) 把结果写入 z。维护匹配区间 `[l, r)`，时间$\mathcal{O}(n)$。若用 `pat + sep + text` 匹配，分隔符必须在两串中都未出现。
 
 ## 03 · Manacher，奇偶回文半径
 
 [C++ 源码](../templates/03-strings/manacher.cpp)
 
-- 奇回文以 i 为中心，长度 `2*d[i]-1`。偶回文中心在 i-1 与 i 之间，长度 `2*d[i]`。
+- palindrome_radius(s,odd) 把半径写入 rad[odd]。奇回文以 i 为中心，长度为 `2*rad[1][i]-1`。偶回文中心在 i-1 与 i 之间，长度为 `2*rad[0][i]`。
 - 两种各跑一次，时间$\mathcal{O}(n)$。两组半径之和就是回文子串出现总数，累加用 long long。
 
 # 字符串算法 · AC 自动机
 
-小写英文字母，调用 ac_init() 后插入全部非空模式串，再调用 ac_build()。每次查询返回各节点代表的模式出现次数。
+小写英文字母，调用 ac_init() 后插入全部非空模式串，再调用 ac_build()。调用 ac_count(text) 后在 ac_occ 中读各节点的出现次数。
 
 ## 01 · Trie、失败指针、补全转移
 
@@ -33,7 +33,7 @@
 
 [C++ 源码](../templates/03-strings/aho-corasick-example.cpp)
 
-- 保存每个模式的终点编号，查询后用 `cnt[endpoint]` 读答案。逆 BFS 序沿 fail 累加，包含重叠出现。
+- 保存每个模式的终点编号，查询后用 `ac_occ[endpoint]` 读答案。逆 BFS 序沿 fail 累加，包含重叠出现。
 - 节点数不得超过 AC_CAP，含根。ac_build 会补全转移。再次建树前先 ac_init()，重复查询直接调用 ac_count。
 - 设模式总长度为 L、节点数为 S、文本长度为 N。插入$\mathcal{O}(L)$，建图$\mathcal{O}(26S)$，单次计数$\mathcal{O}(N + S)$。
 - 适合统计所有模式各自的出现次数。枚举每个匹配的具体位置还需要维护输出链或模式终点信息。
