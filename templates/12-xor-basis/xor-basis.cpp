@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct XorBasis {
     u64 b[64]{};
     int rank = 0;
@@ -34,3 +37,6 @@ struct XorBasis {
     void ordered_vectors(u64 out[]) const;
     optional<u64> kth(u128 k,bool nonempty=false) const;
 };
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 u64 tree_mix(u64 x) {
     x += 0x9e3779b97f4a7c15ULL;
     x = (x^(x>>30))*0xbf58476d1ce4e5b9ULL;
@@ -30,3 +34,6 @@ u64 rooted_tree_hash(const Graph& g,int root,u64 salt) {
     }
     return h[root];
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

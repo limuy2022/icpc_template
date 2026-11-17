@@ -7,3 +7,6 @@ using namespace std;
 using Item = std::pair<long long, int>;  // (distance, vertex)
 using Heap = __gnu_pbds::priority_queue<
     Item, std::greater<Item>, __gnu_pbds::pairing_heap_tag>;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

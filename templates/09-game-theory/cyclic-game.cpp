@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int outcome[GN];
 void game_outcomes(const Graph& g) {
     int n = g.n;
@@ -27,3 +30,6 @@ void game_outcomes(const Graph& g) {
         }
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

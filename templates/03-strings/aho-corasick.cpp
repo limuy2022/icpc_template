@@ -49,3 +49,6 @@ void ac_count(string_view text) {
         ac_occ[ac[v].fail] += ac_occ[v];
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int kuhn_match[GN];
 int kuhn(const Graph& g,int R) {
     fill_n(kuhn_match,R,-1);
@@ -23,3 +26,6 @@ int kuhn(const Graph& g,int R) {
         if (augment(augment,u,u)) ++matches;
     return matches;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

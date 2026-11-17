@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 vector<Point> convex_hull(vector<Point> p) {
     sort(p.begin(),p.end(),lex_less);
     p.erase(unique(p.begin(),p.end(),[](Point a,Point b) {
@@ -24,3 +27,6 @@ vector<Point> convex_hull(vector<Point> p) {
     lower.insert(lower.end(),upper.begin(),upper.end());
     return lower;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

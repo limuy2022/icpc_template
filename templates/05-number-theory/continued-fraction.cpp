@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 vector<ll> continued_fraction(ll a, ll b) { // a>=0, b>0
     vector<ll> terms;
     while (b) {
@@ -16,3 +19,6 @@ pair<i128,i128> convergent(const vector<ll>& terms) {
     }
     return {p1,q1};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

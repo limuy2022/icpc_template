@@ -26,3 +26,6 @@ XorSystem xor_gauss(vector<bitset<XOR_VARIABLES+1>> a,int n) {
         if (where[j] != -1) result.solution[j] = a[where[j]][n];
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#include "linear-sieve.cpp"
+#endif // PDF: endhide
 ll small_phi[SIEVE_MAX+1];
 ll small_mu[SIEVE_MAX+1];
 map<ll, pair<i128,i128>> memo;
@@ -25,3 +29,6 @@ pair<i128,i128> dujiao_sum(ll n) {
     }
     return memo[n] = {a,b};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

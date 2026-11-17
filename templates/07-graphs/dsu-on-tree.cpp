@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#include "hld.cpp"
+#endif // PDF: endhide
 int subtree_colors[GN];
 void subtree_distinct_colors(const Graph& g,const int col[],int C) {
     build_hld(g);
@@ -33,3 +37,6 @@ void subtree_distinct_colors(const Graph& g,const int col[],int C) {
     };
     if (n) dfs(dfs,0,false);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

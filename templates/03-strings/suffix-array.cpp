@@ -35,3 +35,6 @@ void build_sa(string_view s) {
         if (k) --k;
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

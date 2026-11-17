@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "dinic.cpp"
+#endif // PDF: endhide
 // Call dinic() first. Read the source side of the final residual graph.
 bool seen[210];
 void residual_reachable() {
@@ -16,3 +19,6 @@ void residual_reachable() {
         }
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+signed main() {}
+#endif // PDF: endhide

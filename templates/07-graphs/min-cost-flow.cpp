@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 struct CostEdge { int v, next; ll val, cost; } mcf_line[GA]{};
 int mcf_n, mcf_cnt = 1, mcf_head[GN]{};
 void mcf_init(int vertices) {
@@ -48,3 +52,6 @@ pair<ll,i128> min_cost_flow(int s,int t,ll limit=LLONG_MAX) {
     }
     return {total,cost};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

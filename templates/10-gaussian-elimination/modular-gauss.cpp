@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct ModSystem {
     bool consistent;
     int rank;
@@ -39,3 +42,6 @@ ModSystem mod_gauss(vector<vector<ll>> a,int n,ll p) {
     }
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

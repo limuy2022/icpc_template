@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int assignment[GN];
 ll hungarian(const ForwardStar<ll>& g,int m) {
     int n = g.n;
@@ -44,3 +48,6 @@ ll hungarian(const ForwardStar<ll>& g,int m) {
         if (p[j]) assignment[p[j]-1] = j-1;
     return -v[0];
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

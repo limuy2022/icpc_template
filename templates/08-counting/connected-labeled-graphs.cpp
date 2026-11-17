@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 vector<ll> connected_labeled_graphs(int N,ll mod) {
     vector<vector<ll>> choose(N+1,vector<ll>(N+1));
     for (int n = 0; n <= N; ++n) {
@@ -20,3 +23,6 @@ vector<ll> connected_labeled_graphs(int N,ll mod) {
     }
     return conn;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

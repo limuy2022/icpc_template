@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int fa[GN], dep[GN], sub[GN], son[GN];
 int top[GN], pos[GN], rev[GN];
 void build_hld(const Graph& g,int root = 0) {
@@ -61,3 +64,6 @@ void hld_path(int u,int v,Visit visit,bool edge_values=false) {
     int l = pos[u]+(int)edge_values, r = pos[v]+1;
     if (l < r) visit(l,r);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

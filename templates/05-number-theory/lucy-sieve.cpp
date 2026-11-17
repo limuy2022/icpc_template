@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 ll prime_count(ll n) {                  // n >= 0; O(sqrt(n)) states
     if (n < 2) return 0;
     vector<ll> values, g;
@@ -20,3 +23,6 @@ ll prime_count(ll n) {                  // n >= 0; O(sqrt(n)) states
     }
     return g[0];
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -11,3 +11,6 @@ void z_function(string_view s) {
         if (i + z[i] > r) { l = i; r = i + z[i]; }
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 bool on_segment(Point p, Point a, Point b) {
     return sgn(cross(b-a,p-a)) == 0 && sgn(dot(p-a,p-b)) <= 0;
 }
@@ -25,3 +28,6 @@ ld point_segment_distance(Point p, Point a, Point b) {
     ld t = clamp(dot(p-a,v)/norm2(v),0.0L,1.0L);
     return length(p-(a+v*t));
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

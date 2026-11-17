@@ -11,3 +11,6 @@ template<class Key>
 using OrderedSet = pb::tree<Key, pb::null_type, std::less<Key>,
                             pb::rb_tree_tag,
                             pb::tree_order_statistics_node_update>;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

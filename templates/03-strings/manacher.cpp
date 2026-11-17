@@ -14,3 +14,6 @@ void palindrome_radius(string_view s, bool odd) {
         if (i + k - 1 > r) { l = i - k + odd; r = i + k - 1; }
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

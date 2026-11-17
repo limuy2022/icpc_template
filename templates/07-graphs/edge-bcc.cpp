@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#include "undirected-cuts.cpp"
+#endif // PDF: endhide
 int ebcc_id[GN];
 int edge_bcc(const Graph& g) {
     fill_n(ebcc_id,g.n,-1);
@@ -19,3 +23,6 @@ int edge_bcc(const Graph& g) {
     }
     return total;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "forward-star.cpp"
+#endif // PDF: endhide
 int dsu_parent[GN], dsu_size[GN];
 void dsu_init(int n) {
     iota(dsu_parent,dsu_parent+n,0);
@@ -17,3 +20,6 @@ bool unite(int a, int b) {
     dsu_size[a] += dsu_size[b];
     return true;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

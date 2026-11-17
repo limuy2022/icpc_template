@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
     vector<ll> fac(n+1,1);
     for (int i = 1; i <= n; ++i) fac[i] = mul_mod(fac[i-1],i,p);
@@ -25,3 +28,6 @@ ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
     dfs(dfs,n,1);
     return answer;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

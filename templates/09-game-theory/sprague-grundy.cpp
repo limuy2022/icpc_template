@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int sg[GN];
 void sg_dag(const Graph& g) {
     int n = g.n;
@@ -35,3 +38,6 @@ void sg_dag(const Graph& g) {
             ++sg[u];
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

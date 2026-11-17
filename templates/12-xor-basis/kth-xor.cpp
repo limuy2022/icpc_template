@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "xor-basis.cpp"
+#endif // PDF: endhide
 void XorBasis::ordered_vectors(u64 out[]) const {
     u64 a[64];
     copy_n(b,64,a);
@@ -21,3 +25,6 @@ optional<u64> XorBasis::kth(u128 k,bool nonempty) const {
         if ((k>>i)&(u128)1) answer ^= a[i];
     return answer;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

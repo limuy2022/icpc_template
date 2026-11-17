@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int cut_timer, cut_top;
 int tin[GN], low[GN], stamp[GN];
 char cut[GN], bridge[GA/2];
@@ -50,3 +53,6 @@ void build_cuts(const Graph& g) {
         cut_dfs(g,u,-1);
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

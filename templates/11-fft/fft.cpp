@@ -27,3 +27,6 @@ void fft(vector<Complex>& a,bool inverse_transform) {
     if (inverse_transform)
         for (Complex& x : a) x /= (long double)n;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct IPoint { ll x, y; };
 pair<i128,i128> lattice_polygon(const vector<IPoint>& p) {
     i128 area2 = 0, boundary = 0;
@@ -14,3 +17,6 @@ pair<i128,i128> lattice_polygon(const vector<IPoint>& p) {
     i128 interior = (area2-boundary+2)/2;
     return {interior,boundary};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

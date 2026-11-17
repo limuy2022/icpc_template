@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 ld closest_pair2(vector<Point> p) {
     if (p.size() < 2) return numeric_limits<ld>::infinity();
     sort(p.begin(),p.end(),lex_less);
@@ -37,3 +40,6 @@ ld closest_pair2(vector<Point> p) {
     };
     return solve(solve,0,(int)p.size());
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

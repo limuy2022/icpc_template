@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct Rect { ll x1,y1,x2,y2; };
 i128 rectangle_union(const vector<Rect>& rectangles) {
     struct Event { ll x,lo,hi; int delta; };
@@ -49,3 +52,6 @@ i128 rectangle_union(const vector<Rect>& rectangles) {
     }
     return area;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

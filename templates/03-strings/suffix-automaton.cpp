@@ -50,3 +50,6 @@ void sam_propagate() {                      // call once after all sam_extend
         if (p != -1) sam[p].occ += sam[v].occ;
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int seg_n;
 ll seg_sum[4*GN+4]{}, seg_lazy[4*GN+4]{};
 void seg_init(int n_) {
@@ -34,3 +38,6 @@ ll seg_query(int o,int l,int r,int ql,int qr) {
 }
 void seg_add(int l,int r,ll v) { if (l < r) seg_update(1,0,seg_n,l,r,v); }
 ll seg_get(int l,int r) { return l < r ? seg_query(1,0,seg_n,l,r) : 0; }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

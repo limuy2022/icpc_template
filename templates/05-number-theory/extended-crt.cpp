@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 // Uses i128 internally; every combined modulus must fit in long long.
 optional<pair<ll,ll>> crt_merge(ll r, ll M, ll a, ll m) {
     r = norm(r, M); a = norm(a, m);
@@ -13,3 +16,6 @@ optional<pair<ll,ll>> crt_merge(ll r, ll M, ll a, ll m) {
     ll value = norm((i128)r + (i128)M * step, (ll)mod);
     return pair<ll,ll>{value, (ll)mod};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

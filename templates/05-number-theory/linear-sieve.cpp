@@ -26,3 +26,6 @@ void linear_sieve(int n) {
         }
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

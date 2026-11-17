@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int scc_count;
 Graph scc_g(0), scc_rg(0);
 int scc_id[GN];
@@ -40,3 +43,6 @@ void scc_build() {
         ++scc_count;
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

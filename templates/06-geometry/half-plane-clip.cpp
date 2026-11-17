@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 vector<Point> clip_left(const vector<Point>& polygon, Point a, Point b) {
     vector<Point> result;
     int n = (int)polygon.size();
@@ -16,3 +19,6 @@ vector<Point> clip_left(const vector<Point>& polygon, Point a, Point b) {
     }
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

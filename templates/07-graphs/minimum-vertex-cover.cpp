@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#include "hopcroft-karp.cpp"
+#endif // PDF: endhide
 // Call hopcroft_karp(g,R) first; return selected left/right vertex sets.
 pair<vector<int>,vector<int>> minimum_vertex_cover(const Graph& g,int R) {
     static char a[GN], b[GN];
@@ -22,3 +26,6 @@ pair<vector<int>,vector<int>> minimum_vertex_cover(const Graph& g,int R) {
     for (int v = 0; v < R; ++v) if (b[v]) right.push_back(v);
     return {left,right};
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

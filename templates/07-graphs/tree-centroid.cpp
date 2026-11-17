@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 int centroid[2];
 int tree_centroids(const Graph& g) {
     int n = g.n;
@@ -29,3 +32,6 @@ int tree_centroids(const Graph& g) {
     }
     return found;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

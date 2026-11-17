@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 ll sqrt_mod(ll a, ll p) {
     a = norm(a, p);
     if (p == 2 || a == 0) return a;
@@ -24,3 +27,6 @@ ll sqrt_mod(ll a, ll p) {
     }
     return min(x, p-x);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

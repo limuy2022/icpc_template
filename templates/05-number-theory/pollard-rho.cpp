@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#include "miller-rabin.cpp"
+#endif // PDF: endhide
 mt19937_64 nt_rng(chrono::steady_clock::now().time_since_epoch().count());
 u64 rho(u64 n) {                         // n is composite
     if (n % 2 == 0) return 2;
@@ -24,3 +28,6 @@ void factor(u64 n, vector<u64>& out) {
     u64 d = rho(n);
     factor(d, out); factor(n / d, out);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

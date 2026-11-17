@@ -23,3 +23,6 @@ Point rotate_point(Point a, ld rad) {
 bool lex_less(Point a, Point b) {
     return a.x != b.x ? a.x < b.x : a.y < b.y;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

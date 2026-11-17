@@ -40,3 +40,6 @@ vector<string> huffman_codes(int leaves) {
     }
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

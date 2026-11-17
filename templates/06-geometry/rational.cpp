@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct Rat {
     ll p, q;
     Rat(i128 a=0,i128 b=1) {
@@ -18,3 +21,6 @@ struct Rat {
     bool operator==(Rat b) const { return p == b.p && q == b.q; }
     bool operator<(Rat b) const { return (i128)p*b.q < (i128)b.p*q; }
 };
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

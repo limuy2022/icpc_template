@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "../02-common/forward-star.cpp"
+#endif // PDF: endhide
 ll determinant_mod(vector<vector<ll>> a,ll p) { // square; p prime
     int n = (int)a.size();
     for (auto& row : a) for (ll& x : row) x = norm(x,p);
@@ -36,3 +40,6 @@ ll spanning_tree_count(const ForwardStar<ll>& g,ll p) {
     }
     return determinant_mod(a,p);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

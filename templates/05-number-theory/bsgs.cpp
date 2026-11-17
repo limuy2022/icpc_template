@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 ll bsgs_coprime(ll a, ll b, ll m) {
     if (m == 1) return 0;
     ll t = (ll)sqrtl((long double)m) + 1;
@@ -34,3 +37,6 @@ ll discrete_log(ll a, ll b, ll m) {
     ll tail = bsgs_coprime(norm(a,m), target, m);
     return tail == -1 ? -1 : tail + removed;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

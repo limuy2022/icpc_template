@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 struct PrimePowerBinom {
     ll p, mod;
     vector<ll> pref;
@@ -32,3 +35,6 @@ struct PrimePowerBinom {
         return mul_mod(mul_mod(num, inverse(den, mod), mod), pe, mod);
     }
 };
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

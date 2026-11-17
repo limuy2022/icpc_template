@@ -36,3 +36,6 @@ i128 floor_div(i128 a, i128 b) {         // b > 0
     i128 q = a / b;
     return q - (a % b < 0);
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

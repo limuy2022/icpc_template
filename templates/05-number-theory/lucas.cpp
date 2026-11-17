@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 // fac/ifac have indices 0..p-1; p is prime and small enough to store.
 ll lucas(u64 n, u64 k, ll p, const ll fac[],
          const ll ifac[]) {
@@ -13,3 +16,6 @@ ll lucas(u64 n, u64 k, ll p, const ll fac[],
     }
     return ans;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -28,6 +28,8 @@ INLINE = re.compile(r"(\$[^$]+\$|\x60[^\x60]+\x60)")
 CPP_INCLUDE = re.compile(r"^\[C\+\+ 源码\]\(([^)]+\.cpp)\)$")
 CPP_PREAMBLE = ["#include <bits/stdc++.h>", "using namespace std;"]
 CPP_MAIN = "int main() { // PDF: body"
+CPP_HIDE = "#if __INCLUDE_LEVEL__ == 0 // PDF: hide"
+CPP_ENDHIDE = "#endif // PDF: endhide"
 
 
 def register_font(path):
@@ -61,7 +63,17 @@ def register_font(path):
 
 
 def read_cpp(source):
-    lines = source.read_text(encoding="utf-8").splitlines()
+    lines = []
+    hidden = False
+    for number, line in enumerate(source.read_text(encoding="utf-8").splitlines(), 1):
+        if line in (CPP_HIDE, CPP_ENDHIDE):
+            if hidden == (line == CPP_HIDE):
+                raise SystemExit(f"{source.name}:{number} 的 PDF 隐藏标记不匹配。")
+            hidden = not hidden
+        elif not hidden:
+            lines.append(line)
+    if hidden:
+        raise SystemExit(f"{source.name} 缺少 PDF: endhide 标记。")
     if lines[:2] == CPP_PREAMBLE:
         lines = lines[2:]
     if CPP_MAIN not in lines:

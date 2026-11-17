@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 struct Circle { Point o; ld r; };
 Circle diameter_circle(Point a,Point b) {
     return {(a+b)/2,length(a-b)/2};
@@ -35,3 +38,6 @@ Circle smallest_circle(vector<Point> p) {
     }
     return c;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

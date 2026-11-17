@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 u64 mul64(u64 a, u64 b, u64 m) { return (u128)a * b % m; }
 u64 pow64(u64 a, u64 e, u64 m) {
     u64 r = 1 % m;
@@ -30,3 +33,6 @@ bool is_prime(u64 n) {
     }
     return true;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

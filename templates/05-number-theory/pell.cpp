@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "modular-arithmetic.cpp"
+#endif // PDF: endhide
 optional<pair<i128,i128>> pell(ll D) {
     ll a0 = (ll)sqrtl((long double)D);
     while ((a0+1)*(a0+1) <= D) ++a0;
@@ -19,3 +22,6 @@ optional<pair<i128,i128>> pell(ll D) {
         positive_norm = !positive_norm;
     }
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

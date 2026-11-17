@@ -23,3 +23,6 @@ struct ForwardStar {
     }
 };
 using Graph = ForwardStar<>;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

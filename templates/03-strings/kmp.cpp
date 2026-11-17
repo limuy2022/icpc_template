@@ -27,3 +27,6 @@ vector<int> kmp(string_view text, string_view pat) {
     }
     return hits;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

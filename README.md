@@ -31,3 +31,5 @@ python3 -m venv .venv
 可执行的用法示例用 `int main() { // PDF: body` 开头，正文统一缩进四个空格，最后一行用 `}` 结束。把示例依赖的 `#include` 放在入口前。生成 PDF 时只展开 main 正文，并还原它的缩进。
 
 使用全局数组的板子每次只维护一份状态。多测按章节说明重新初始化，或重新调用构建函数。
+
+所有 `.cpp` 都可以单独编译，例如 `g++ -std=gnu++17 templates/07-graphs/two-sat.cpp -o two-sat`。纯模板的依赖和空入口放在 `#if __INCLUDE_LEVEL__ == 0 // PDF: hide` 与 `#endif // PDF: endhide` 之间。这样单独编译时会带上依赖和入口，作为片段被另一个示例包含时会跳过这些内容，PDF 也会省略这些行。

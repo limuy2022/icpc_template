@@ -1,5 +1,9 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../05-number-theory/modular-arithmetic.cpp"
+#include "fft.cpp"
+#endif // PDF: endhide
 vector<ll> convolution_fft(const vector<ll>& a,const vector<ll>& b) {
     if (a.empty() || b.empty()) return {};
     size_t need = a.size()+b.size()-1, n = 1;
@@ -14,3 +18,6 @@ vector<ll> convolution_fft(const vector<ll>& a,const vector<ll>& b) {
     for (size_t i = 0; i < need; ++i) result[i] = llroundl(fa[i].real());
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "../06-geometry/point.cpp"
+#endif // PDF: endhide
 struct RealSystem {
     bool consistent;
     int rank;
@@ -39,3 +42,6 @@ RealSystem real_gauss(vector<vector<ld>> a,int n,ld eps=1e-12L) {
     }
     return result;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide

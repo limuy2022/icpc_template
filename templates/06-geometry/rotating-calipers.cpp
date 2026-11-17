@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+#include "point.cpp"
+#endif // PDF: endhide
 ld convex_diameter2(const vector<Point>& p) {
     int n = (int)p.size();
     if (n < 2) return 0;
@@ -18,3 +21,6 @@ ld convex_diameter2(const vector<Point>& p) {
     }
     return best;
 }
+#if __INCLUDE_LEVEL__ == 0 // PDF: hide
+int main() {}
+#endif // PDF: endhide
