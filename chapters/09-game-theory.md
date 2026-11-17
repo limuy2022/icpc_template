@@ -9,43 +9,7 @@
 
 ## 有向无环状态图的 SG 模板
 
-```cpp
-vector<int> sg_dag(const Graph& g) {
-    int n = g.n;
-    static int indegree[GN], outdegree[GN];
-    fill_n(indegree,n,0); fill_n(outdegree,n,0);
-    vector<int> order;
-    for (int u = 0; u < n; ++u) {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            ++indegree[g.line[id].v];
-            ++outdegree[u];
-        }
-    }
-    queue<int> q;
-    for (int u = 0; u < n; ++u) if (indegree[u] == 0) q.push(u);
-    while (!q.empty()) {
-        int u = q.front(); q.pop(); order.push_back(u);
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (--indegree[v] == 0) q.push(v);
-        }
-    }
-    vector<int> sg(n);
-    static int seen[GN+1];
-    fill_n(seen,n+1,0);
-    for (auto it = order.rbegin(); it != order.rend(); ++it) {
-        int u = *it, degree = outdegree[u];
-        int stamp = (int)(it-order.rbegin())+1;
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            seen[sg[v]] = stamp;
-        }
-        while (sg[u] <= degree && seen[sg[u]] == stamp)
-            ++sg[u];
-    }
-    return sg;
-}
-```
+[C++ 源码](../templates/09-game-theory/sprague-grundy.cpp)
 
 - mex 不超过不同后继的数量，因此 seen 按点数分配。总时间与空间为 $\mathcal{O}(V+E)$；输入必须是 DAG，每条边表示合法的一步操作。
 - 求游戏和的 SG 时对 SG 数值做异或，不能仅对“是否必胜”的布尔值异或。
@@ -76,19 +40,7 @@ vector<int> sg_dag(const Graph& g) {
 - 每步从一堆取任意正数，或两堆取相同正数，取尽获胜。设 a<=b、k=b-a，P 局面为 $a=\lfloor k\varphi\rfloor$，$\varphi=\frac{1+\sqrt{5}}{2}$。
 - 大整数时直接乘浮点黄金比可能向下取整错误。可用 $\lfloor k\varphi\rfloor=\left\lfloor\frac{k+\lfloor\sqrt{5k^2}\rfloor}{2}\right\rfloor$ 做精确判定。
 
-```cpp
-bool wythoff_losing(u64 a,u64 b) {          // a,b <= 10^18
-    if (a > b) swap(a,b);
-    u64 k = b-a, low = 0, high = 3*k+1;
-    u128 target = (u128)5*k*k;
-    while (low+1 < high) {
-        u64 mid = low+(high-low)/2;
-        if ((u128)mid*mid <= target) low = mid;
-        else high = mid;
-    }
-    return a == (k+low)/2;
-}
-```
+[C++ 源码](../templates/09-game-theory/wythoff.cpp)
 
 ## 阶梯 Nim、Fibonacci Nim 与扩展
 
@@ -117,35 +69,7 @@ bool wythoff_losing(u64 a,u64 b) {          // a,b <= 10^18
 
 每条边表示一次轮流行动，终点无路可走者负。若动作依赖玩家，状态中必须包含“当前玩家”。返回 -1 败、1 胜、0 平局。
 
-```cpp
-vector<int> game_outcomes(const Graph& g) {
-    int n = g.n;
-    static Graph reverse(0);
-    reverse.init(n);
-    static int remain[GN];
-    fill_n(remain,n,0);
-    vector<int> result(n);
-    queue<int> q;
-    for (int u = 0; u < n; ++u) {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            reverse.add(v,u);
-            ++remain[u];
-        }
-        if (remain[u] == 0) { result[u] = -1; q.push(u); }
-    }
-    while (!q.empty()) {
-        int v = q.front(); q.pop();
-        for (int id = reverse.head[v]; id; id = reverse.line[id].next) {
-            int u = reverse.line[id].v;
-            if (result[u] != 0) continue;
-            if (result[v] == -1) { result[u] = 1; q.push(u); }
-            else if (--remain[u] == 0) { result[u] = -1; q.push(u); }
-        }
-    }
-    return result;
-}
-```
+[C++ 源码](../templates/09-game-theory/cyclic-game.cpp)
 
 - 能到必败后继则胜，全部后继都胜则败。剩余未定点可双方避免必败而无限行动，按此规则判平局。
 - 时间与空间 $\mathcal{O}(V+E)$。若题目规定重复局面输、限制步数或禁止走回头路，需要把相应信息并入状态。

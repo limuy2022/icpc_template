@@ -6,31 +6,7 @@
 
 ## 点、向量与共用函数
 
-```cpp
-using ld = long double;
-const ld EPS = 1e-12L;
-const ld PI = acosl(-1.0L);
-int sgn(ld x) { return (x > EPS) - (x < -EPS); }
-struct Point {
-    ld x, y;
-    Point operator+(Point p) const { return {x+p.x,y+p.y}; }
-    Point operator-(Point p) const { return {x-p.x,y-p.y}; }
-    Point operator*(ld k) const { return {x*k,y*k}; }
-    Point operator/(ld k) const { return {x/k,y/k}; }
-};
-ld dot(Point a, Point b) { return a.x*b.x+a.y*b.y; }
-ld cross(Point a, Point b) { return a.x*b.y-a.y*b.x; }
-ld norm2(Point a) { return dot(a,a); }
-ld length(Point a) { return sqrtl(norm2(a)); }
-Point perp(Point a) { return {-a.y,a.x}; }
-Point rotate_point(Point a, ld rad) {
-    return {a.x*cosl(rad)-a.y*sinl(rad),
-            a.x*sinl(rad)+a.y*cosl(rad)};
-}
-bool lex_less(Point a, Point b) {
-    return a.x != b.x ? a.x < b.x : a.y < b.y;
-}
-```
+[C++ 源码](../templates/06-geometry/point.cpp)
 
 - cross(B-A,C-A)>0 表示 C 在 A→B 左侧，正向多边形为逆时针。dot 为 0 表示垂直，cross 为 0 表示平行。
 - 整数坐标优先用整数叉积。先提升再相减，如 (i128(b.x)-a.x)*(i128(c.y)-a.y)，否则减法可能先溢出。
@@ -51,33 +27,7 @@ bool lex_less(Point a, Point b) {
 
 ## 相交、投影与距离
 
-```cpp
-bool on_segment(Point p, Point a, Point b) {
-    return sgn(cross(b-a,p-a)) == 0 && sgn(dot(p-a,p-b)) <= 0;
-}
-bool segments_intersect(Point a, Point b, Point c, Point d) {
-    int x = sgn(cross(b-a,c-a)), y = sgn(cross(b-a,d-a));
-    int z = sgn(cross(d-c,a-c)), w = sgn(cross(d-c,b-c));
-    if (x*y < 0 && z*w < 0) return true;
-    return on_segment(a,c,d) || on_segment(b,c,d) ||
-           on_segment(c,a,b) || on_segment(d,a,b);
-}
-optional<Point> line_intersection(Point a, Point v, Point b, Point w) {
-    ld den = cross(v,w);
-    if (sgn(den) == 0) return nullopt;
-    return a + v*(cross(b-a,w)/den);
-}
-Point projection(Point p, Point a, Point b) { // a != b
-    Point v = b-a;
-    return a+v*(dot(p-a,v)/norm2(v));
-}
-ld point_segment_distance(Point p, Point a, Point b) {
-    Point v = b-a;
-    if (norm2(v) == 0) return length(p-a);
-    ld t = clamp(dot(p-a,v)/norm2(v),0.0L,1.0L);
-    return length(p-(a+v*t));
-}
-```
+[C++ 源码](../templates/06-geometry/segment.cpp)
 
 - `line_intersection` 的参数是“点+方向”。平行与重合都返回空，需要时另判 cross(b-a,v)=0。
 - 线段距离相交为 0，否则取四个端点到另一线段的最小距离。射线投影要求参数$t\geq 0$。
@@ -88,19 +38,7 @@ ld point_segment_distance(Point p, Point a, Point b) {
 - 非零面积简单多边形的重心 $C=\frac{\sum_i(p_i+p_{i+1})\operatorname{cross}(p_i,p_{i+1})}{3A_2}$。
 - 点包含先判边界，再按射线奇偶或回转数判内部。上、下端点采用半开高度区间，避免顶点算两次。
 
-```cpp
-int point_in_polygon(Point q, const vector<Point>& p) {
-    int winding = 0, n = (int)p.size();
-    for (int i = 0; i < n; ++i) {
-        Point a = p[i], b = p[(i+1)%n];
-        if (on_segment(q,a,b)) return 0;        // boundary
-        int side = sgn(cross(b-a,q-a));
-        if (a.y <= q.y && b.y > q.y && side > 0) ++winding;
-        if (b.y <= q.y && a.y > q.y && side < 0) --winding;
-    }
-    return winding ? 1 : -1;                   // inside / outside
-}
-```
+[C++ 源码](../templates/06-geometry/polygon.cpp)
 
 - 凸多边形可用固定顶点扇形二分，将单点判定降为$\mathcal{O}(\log  n)$，须先处理扇形两边界和退化凸包。
 
@@ -193,22 +131,7 @@ for each remaining point P:
 - 用有向双倍面积$A_{2}$，$I=\frac{|A_2|-B+2}{2}$。整数算到底，不需要浮点面积。
 - 有 h 个洞，推广为 $S=I+\frac{B}{2}-1+h$，$I=\frac{2S-B+2-2h}{2}$。B 要计所有边界环。
 
-```cpp
-struct IPoint { ll x, y; };
-pair<i128,i128> lattice_polygon(const vector<IPoint>& p) {
-    i128 area2 = 0, boundary = 0;
-    int n = (int)p.size();
-    for (int i = 0; i < n; ++i) {
-        auto a = p[i], b = p[(i+1)%n];
-        area2 += (i128)a.x*b.y-(i128)a.y*b.x;
-        // This version assumes each coordinate difference fits in ll.
-        boundary += gcd(llabs(b.x-a.x),llabs(b.y-a.y));
-    }
-    if (area2 < 0) area2 = -area2;
-    i128 interior = (area2-boundary+2)/2;
-    return {interior,boundary};
-}
-```
+[C++ 源码](../templates/06-geometry/pick.cpp)
 
 - 仅用于非退化、简单、无洞格点多边形。自交多边形的代数面积不能直接代入 Pick。
 - 坐标差若可能达到 `LLONG_MIN`，llabs 不可表示，先用 i128 算差并取绝对值，再用 std::__gcd。
@@ -218,32 +141,7 @@ pair<i128,i128> lattice_polygon(const vector<IPoint>& p) {
 
 ## Andrew 单调链（只留极点，逆时针）
 
-```cpp
-vector<Point> convex_hull(vector<Point> p) {
-    sort(p.begin(),p.end(),lex_less);
-    p.erase(unique(p.begin(),p.end(),[](Point a,Point b) {
-        return a.x == b.x && a.y == b.y;
-    }),p.end());
-    if (p.size() <= 1) return p;
-    vector<Point> lower, upper;
-    for (Point a : p) {
-        while (lower.size() >= 2 &&
-               sgn(cross(lower.back()-lower[lower.size()-2],
-                         a-lower.back())) <= 0) lower.pop_back();
-        lower.push_back(a);
-    }
-    for (auto it = p.rbegin(); it != p.rend(); ++it) {
-        Point a = *it;
-        while (upper.size() >= 2 &&
-               sgn(cross(upper.back()-upper[upper.size()-2],
-                         a-upper.back())) <= 0) upper.pop_back();
-        upper.push_back(a);
-    }
-    lower.pop_back(); upper.pop_back();
-    lower.insert(lower.end(),upper.begin(),upper.end());
-    return lower;
-}
-```
+[C++ 源码](../templates/06-geometry/convex-hull.cpp)
 
 - 时间$\mathcal{O}(n \log  n)$。全共线返回两端点；重复单点返回一个点；空输入返回空。
 - 要保留边上的共线点，将$\leq 0$改成 <0，同时单独处理全共线，避免上下链重复输出。
@@ -265,57 +163,7 @@ vector<Point> convex_hull(vector<Point> p) {
 
 矩形为整数坐标$(x_{1},y_{1},x_{2},y_{2})$，默认$x_{1}\leq x_{2}$、$y_{1}\leq y_{2}$。退化矩形跳过。线段树叶子代表 [Y[i],Y[i+1])，不是一个坐标点。
 
-```cpp
-struct Rect { ll x1,y1,x2,y2; };
-i128 rectangle_union(const vector<Rect>& rectangles) {
-    struct Event { ll x,lo,hi; int delta; };
-    vector<Event> events;
-    vector<ll> ys;
-    for (auto r : rectangles) {
-        if (r.x1 == r.x2 || r.y1 == r.y2) continue;
-        events.push_back({r.x1,r.y1,r.y2,1});
-        events.push_back({r.x2,r.y1,r.y2,-1});
-        ys.push_back(r.y1); ys.push_back(r.y2);
-    }
-    if (events.empty()) return 0;
-    sort(ys.begin(),ys.end());
-    ys.erase(unique(ys.begin(),ys.end()),ys.end());
-    sort(events.begin(),events.end(),[](Event a,Event b) {
-        return a.x < b.x;
-    });
-    int m = (int)ys.size()-1;
-    constexpr int Y_CAP = 200005; // max unique y coordinates
-    static int cover[4*Y_CAP+4];
-    static i128 len[4*Y_CAP+4];
-    fill_n(cover,4*m+4,0); fill_n(len,4*m+4,0);
-    auto update = [&](auto&& self,int o,int l,int r,
-                      int ql,int qr,int delta) -> void {
-        if (ql <= l && r <= qr) cover[o] += delta;
-        else {
-            int mid = (l+r)/2;
-            if (ql <= mid) self(self,o*2,l,mid,ql,qr,delta);
-            if (qr > mid) self(self,o*2+1,mid+1,r,ql,qr,delta);
-        }
-        if (cover[o]) len[o] = (i128)ys[r+1]-ys[l];
-        else len[o] = l == r ? 0 : len[o*2]+len[o*2+1];
-    };
-    i128 area = 0;
-    ll previous = events.front().x;
-    size_t i = 0;
-    while (i < events.size()) {
-        ll x = events[i].x;
-        area += ((i128)x-previous)*len[1];
-        while (i < events.size() && events[i].x == x) {
-            auto e = events[i++];
-            int l = lower_bound(ys.begin(),ys.end(),e.lo)-ys.begin();
-            int r = lower_bound(ys.begin(),ys.end(),e.hi)-ys.begin()-1;
-            update(update,1,0,m-1,l,r,e.delta);
-        }
-        previous = x;
-    }
-    return area;
-}
-```
+[C++ 源码](../templates/06-geometry/rectangle-union.cpp)
 
 - $\mathcal{O}(n \log  n)$时间、$\mathcal{O}(n)$空间。面积贡献先用旧覆盖长度乘横向位移，再处理本 x 的全部事件。
 - 周长并还需维护覆盖段数与端点覆盖标记。竖向贡献要处理同 x 的增删重合，不能只用组前后总长度差。
@@ -327,26 +175,7 @@ i128 rectangle_union(const vector<Rect>& rectangles) {
 
 输入为逆时针凸包且仅保留极点，重复首点不放在末尾。空或单点返回 0，两点直接计算。
 
-```cpp
-ld convex_diameter2(const vector<Point>& p) {
-    int n = (int)p.size();
-    if (n < 2) return 0;
-    if (n == 2) return norm2(p[1]-p[0]);
-    ld best = 0;
-    int j = 1;
-    for (int i = 0; i < n; ++i) {
-        int ni = (i+1)%n;
-        Point edge = p[ni]-p[i];
-        while (cross(edge,p[(j+1)%n]-p[i]) >
-               cross(edge,p[j]-p[i])+EPS) j = (j+1)%n;
-        for (int v : {j,(j+1)%n}) {
-            best = max(best,norm2(p[v]-p[i]));
-            best = max(best,norm2(p[v]-p[ni]));
-        }
-    }
-    return best;
-}
-```
+[C++ 源码](../templates/06-geometry/rotating-calipers.cpp)
 
 - 凸包生成$\mathcal{O}(n \log  n)$，卡壳本身$\mathcal{O}(h)$。相等的最远支撑点可能有两个，因此检查 j 与 j+1。
 - 若原数据是整数，面积比较与距离平方可用 i128，得到精确最远点对。
@@ -372,24 +201,7 @@ ld convex_diameter2(const vector<Point>& p) {
 
 保留$\mathrm{cross}(B-A,P-A)\geq 0$的一侧。下面对已有凸多边形逐条裁剪，适合约束数中等或已知初始边界的题。
 
-```cpp
-vector<Point> clip_left(const vector<Point>& polygon, Point a, Point b) {
-    vector<Point> result;
-    int n = (int)polygon.size();
-    Point v = b-a;                          // nonzero direction
-    for (int i = 0; i < n; ++i) {
-        Point p = polygon[i], q = polygon[(i+1)%n];
-        ld sp = cross(v,p-a), sq = cross(v,q-a);
-        bool inside_p = sp >= 0, inside_q = sq >= 0;
-        if (inside_p) result.push_back(p);
-        if (inside_p != inside_q) {
-            ld t = sp/(sp-sq);
-            result.push_back(p+(q-p)*t);
-        }
-    }
-    return result;
-}
-```
+[C++ 源码](../templates/06-geometry/half-plane-clip.cpp)
 
 - 此模板用原始符号判断边界，确保交点参数在 [0,1]。浮点噪声较大时，按题意将边界统一平移一个容差后再裁剪。
 - 从题目给定的固定顶点数外框开始，每条半平面裁剪一次，最坏$\mathcal{O}(k^{2})$。初始有 h 个顶点时为$\mathcal{O}(k(h+k))$，结果可能为空、点或线段。
@@ -423,45 +235,7 @@ intersect each pair of adjacent deque lines, including last with first
 
 ## 分治与归并，$\mathcal{O}(n \log  n)$
 
-```cpp
-ld closest_pair2(vector<Point> p) {
-    if (p.size() < 2) return numeric_limits<ld>::infinity();
-    sort(p.begin(),p.end(),lex_less);
-    vector<Point> buffer(p.size());
-    auto by_y = [](Point a,Point b) {
-        return a.y != b.y ? a.y < b.y : a.x < b.x;
-    };
-    auto solve = [&](auto&& self,int l,int r) -> ld {
-        if (r-l <= 3) {
-            ld best = numeric_limits<ld>::infinity();
-            for (int i = l; i < r; ++i)
-                for (int j = l; j < i; ++j)
-                    best = min(best,norm2(p[i]-p[j]));
-            sort(p.begin()+l,p.begin()+r,by_y);
-            return best;
-        }
-        int mid = (l+r)/2;
-        ld middle_x = p[mid].x;              // save before recursion
-        ld best = min(self(self,l,mid),self(self,mid,r));
-        merge(p.begin()+l,p.begin()+mid,p.begin()+mid,p.begin()+r,
-              buffer.begin()+l,by_y);
-        copy(buffer.begin()+l,buffer.begin()+r,p.begin()+l);
-        vector<Point> strip;
-        for (int i = l; i < r; ++i) {
-            ld dx = p[i].x-middle_x;
-            if (dx*dx >= best) continue;
-            for (int j = (int)strip.size()-1; j >= 0; --j) {
-                ld dy = p[i].y-strip[j].y;
-                if (dy*dy >= best) break;
-                best = min(best,norm2(p[i]-strip[j]));
-            }
-            strip.push_back(p[i]);
-        }
-        return best;
-    };
-    return solve(solve,0,(int)p.size());
-}
-```
+[C++ 源码](../templates/06-geometry/closest-pair.cpp)
 
 - 递归入口按 x 划分，出口将该段排成 y 序。必须先保存 `middle_x`，不能递归后再读被重排的位置。
 - 带状区按 y 排序，平面装箱界保证每点只检查常数个有效邻点。重复点的最近距离为 0。
@@ -477,43 +251,7 @@ ld closest_pair2(vector<Point> p) {
 
 ## 三点外接圆与三层循环
 
-```cpp
-struct Circle { Point o; ld r; };
-Circle diameter_circle(Point a,Point b) {
-    return {(a+b)/2,length(a-b)/2};
-}
-bool outside(Circle c,Point p) {
-    return c.r < 0 || norm2(p-c.o) > (c.r+EPS)*(c.r+EPS);
-}
-Circle through_three(Point a,Point b,Point c) {
-    Point u = b-a, v = c-a;
-    ld den = 2*cross(u,v);
-    if (den == 0) {
-        Circle best{{0,0},numeric_limits<ld>::infinity()};
-        for (Circle q : {diameter_circle(a,b),diameter_circle(a,c),
-                         diameter_circle(b,c)})
-            if (!outside(q,a) && !outside(q,b) && !outside(q,c) &&
-                q.r < best.r) best = q;
-        return best;
-    }
-    Point o = a+(perp(u)*norm2(v)-perp(v)*norm2(u))/den;
-    return {o,length(o-a)};
-}
-Circle smallest_circle(vector<Point> p) {
-    mt19937_64 rng(chrono::steady_clock::now().time_since_epoch().count());
-    shuffle(p.begin(),p.end(),rng);
-    Circle c{{0,0},-1};
-    for (int i = 0; i < (int)p.size(); ++i) if (outside(c,p[i])) {
-        c = {p[i],0};
-        for (int j = 0; j < i; ++j) if (outside(c,p[j])) {
-            c = diameter_circle(p[i],p[j]);
-            for (int k = 0; k < j; ++k) if (outside(c,p[k]))
-                c = through_three(p[i],p[j],p[k]);
-        }
-    }
-    return c;
-}
-```
+[C++ 源码](../templates/06-geometry/minimum-enclosing-circle.cpp)
 
 - 空集返回半径 -1 作为无圆标记，单点半径为 0。共线三点用最远两点的直径圆。
 - den 接近 0 时外接圆数值敏感，必要时用更高精度或按数据误差做共线分类。不能随意把所有瘦三角形当作共线。
@@ -539,13 +277,7 @@ Circle smallest_circle(vector<Point> p) {
 - DT 最大化最小角，且最小生成树边与欧氏最近点对边包含在其中（适当处理退化）。
 - 局部四边形凸时，可翻转对角线恢复空圆条件。非凸四边形不能直接翻边。
 
-```cpp
-ld incircle(Point a,Point b,Point c,Point d) {
-    a = a-d; b = b-d; c = c-d;
-    return norm2(a)*cross(b,c)-norm2(b)*cross(a,c)
-           +norm2(c)*cross(a,b);
-}
-```
+[C++ 源码](../templates/06-geometry/incircle.cpp)
 
 - 当 ABC 逆时针，incircle>0 表示 D 在外接圆内。ABC 顺时针时符号反转，三点共线时无唯一外接圆。
 
@@ -579,12 +311,7 @@ Divide and conquer:
 
 反演中心 O、正参数$k=R^{2}$，P≠O 的像 $P'=O+\frac{k(P-O)}{|P-O|^2}$。满足 OP·OP'=k，连续做两次回到原点。
 
-```cpp
-Point invert_point(Point p,Point o,ld k) {
-    Point v = p-o;
-    return o+v*(k/norm2(v));
-}
-```
+[C++ 源码](../templates/06-geometry/inversion.cpp)
 
 - O 对应无穷远点，图形经过 O 时像可能从圆变成直线。不要将 O 本身送入除法公式。
 - 距离满足 $|P'Q'|=\frac{k|PQ|}{|OP||OQ|}$。反演保角的绝对值，但反向，不保持长度、面积或内外关系。
@@ -615,26 +342,7 @@ Point invert_point(Point p,Point o,ld k) {
 
 分数始终约为最简形式，分母为正，零统一为 0/1。分子和分母存 ll，中间运算用 i128，约分用 GNU 的 std::__gcd，传入同类型非负整数。类型别名见第 13 页。
 
-```cpp
-struct Rat {
-    ll p, q;
-    Rat(i128 a=0,i128 b=1) {
-        if (b < 0) { a = -a; b = -b; }
-        i128 g = std::__gcd(a < 0 ? -a : a,b);
-        p = a/g; q = b/g;
-    }
-    Rat operator+(Rat b) const {
-        return {(i128)p*b.q + (i128)b.p*q,(i128)q*b.q};
-    }
-    Rat operator-(Rat b) const {
-        return {(i128)p*b.q - (i128)b.p*q,(i128)q*b.q};
-    }
-    Rat operator*(Rat b) const { return {(i128)p*b.p,(i128)q*b.q}; }
-    Rat operator/(Rat b) const { return {(i128)p*b.q,(i128)q*b.p}; }
-    bool operator==(Rat b) const { return p == b.p && q == b.q; }
-    bool operator<(Rat b) const { return (i128)p*b.q < (i128)b.p*q; }
-};
-```
+[C++ 源码](../templates/06-geometry/rational.cpp)
 
 - 比较用宽整数交叉乘，无需 eps。可用于 sort、set 和 pair 坐标的字典序。
 - 直线 $y=x$ 与 $x+2y=1$ 的交点为 x=y=Rat(1,3)。一般直线交点可用克拉默法则，行列式为 0 时先判平行或重合。

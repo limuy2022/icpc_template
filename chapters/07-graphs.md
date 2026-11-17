@@ -10,36 +10,7 @@
 - 树有一个或两个重心，两个重心必相邻。重心使到全部点的距离之和最小，删除重心适合做点分治。
 - 树的直径中心最小化最远距离，树的重心最小化距离总和，两种目标应按题意选择。
 
-```cpp
-vector<int> tree_centroids(const Graph& g) {
-    int n = g.n;
-    if (n == 0) return {};
-    static int parent[GN], size[GN], order[GN];
-    fill_n(size,n,1);
-    vector<int> answer;
-    int used = 1; order[0] = 0;
-    parent[0] = 0;
-    for (int i = 0; i < used; ++i) {
-        int u = order[i];
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (v == parent[u]) continue;
-            parent[v] = u; order[used++] = v;
-        }
-    }
-    for (int i = n-1; i >= 0; --i) {
-        int u = order[i], largest = 0;
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (parent[v] != u) continue;
-            size[u] += size[v]; largest = max(largest,size[v]);
-        }
-        largest = max(largest,n-size[u]);
-        if (largest <= n/2) answer.push_back(u);
-    }
-    return answer;
-}
-```
+[C++ 源码](../templates/07-graphs/tree-centroid.cpp)
 
 - 输入为无自环、无重边的连通无向树，每条边用 add_undirected 加入。模板迭代求解，时间与空间均为 $\mathcal{O}(n)$。
 - 带非负点权时，将大小改为权值和，条件改为每块权值不超过总权一半。负点权不满足这些结论。
@@ -57,71 +28,7 @@ vector<int> tree_centroids(const Graph& g) {
 
 重儿子取子树最大的儿子。重链连续，子树也连续，子树 u 对应 $[\mathrm{pos}[u],\mathrm{pos}[u]+\mathrm{size}[u])$。
 
-```cpp
-struct HLD {
-    int n;
-    int parent[GN], depth[GN], size[GN], heavy[GN];
-    int head[GN], pos[GN], rev[GN];
-    HLD(const Graph& g, int root = 0)
-        : n(g.n) {
-        fill_n(size,n,1); fill_n(heavy,n,-1);
-        if (n == 0) return;
-        static int order[GN];
-        int used = 1; order[0] = root;
-        parent[root] = root; depth[root] = 0;
-        for (int i = 0; i < n; ++i) {
-            int u = order[i];
-            for (int id = g.head[u]; id; id = g.line[id].next) {
-                int v = g.line[id].v;
-                if (v == parent[u]) continue;
-                parent[v] = u; depth[v] = depth[u]+1;
-                order[used++] = v;
-            }
-        }
-        for (int i = n-1; i >= 0; --i) {
-            int u = order[i];
-            for (int id = g.head[u]; id; id = g.line[id].next) {
-                int v = g.line[id].v;
-                if (parent[v] != u) continue;
-                size[u] += size[v];
-                if (heavy[u] == -1 || size[v] > size[heavy[u]])
-                    heavy[u] = v;
-            }
-        }
-        int timer = 0;
-        vector<pair<int,int>> tasks{{root,root}};
-        while (!tasks.empty()) {
-            auto [u,top] = tasks.back(); tasks.pop_back();
-            for (; u != -1; u = heavy[u]) {
-                head[u] = top; pos[u] = timer; rev[timer++] = u;
-                for (int id = g.head[u]; id; id = g.line[id].next) {
-                    int v = g.line[id].v;
-                    if (parent[v] == u && v != heavy[u])
-                        tasks.push_back({v,v});
-                }
-            }
-        }
-    }
-    int lca(int u,int v) const {
-        while (head[u] != head[v]) {
-            if (depth[head[u]] < depth[head[v]]) swap(u,v);
-            u = parent[head[u]];
-        }
-        return depth[u] < depth[v] ? u : v;
-    }
-    template<class Visit>
-    void path(int u,int v,Visit visit,bool edge_values=false) const {
-        while (head[u] != head[v]) {
-            if (depth[head[u]] < depth[head[v]]) swap(u,v);
-            visit(pos[head[u]],pos[u]+1);
-            u = parent[head[u]];
-        }
-        if (depth[u] > depth[v]) swap(u,v);
-        int l = pos[u]+(int)edge_values, r = pos[v]+1;
-        if (l < r) visit(l,r);
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/hld.cpp)
 
 - 输入为连通树。预处理 $\mathcal{O}(n)$，一次路径拆成 $\mathcal{O}(\log n)$ 段，LCA 为 $\mathcal{O}(\log n)$。
 - path 的段次序和方向适用于和、最大值等交换运算。矩阵积、字符串等需分 u/v 两侧收集，再按方向合并。
@@ -131,41 +38,7 @@ struct HLD {
 
 ## 区间加、区间和线段树
 
-```cpp
-struct RangeAddSum {
-    int n;
-    ll sum[4*GN+4]{}, lazy[4*GN+4]{};
-    RangeAddSum(int n) : n(n) {}
-    void apply(int o,int l,int r,ll v) {
-        sum[o] += v*(r-l); lazy[o] += v;
-    }
-    void push(int o,int l,int r) {
-        if (r-l <= 1 || lazy[o] == 0) return;
-        int mid = (l+r)/2;
-        apply(o*2,l,mid,lazy[o]); apply(o*2+1,mid,r,lazy[o]);
-        lazy[o] = 0;
-    }
-    void update(int o,int l,int r,int ql,int qr,ll v) {
-        if (ql <= l && r <= qr) { apply(o,l,r,v); return; }
-        push(o,l,r);
-        int mid = (l+r)/2;
-        if (ql < mid) update(o*2,l,mid,ql,qr,v);
-        if (qr > mid) update(o*2+1,mid,r,ql,qr,v);
-        sum[o] = sum[o*2]+sum[o*2+1];
-    }
-    ll query(int o,int l,int r,int ql,int qr) {
-        if (ql <= l && r <= qr) return sum[o];
-        push(o,l,r);
-        int mid = (l+r)/2;
-        ll ans = 0;
-        if (ql < mid) ans += query(o*2,l,mid,ql,qr);
-        if (qr > mid) ans += query(o*2+1,mid,r,ql,qr);
-        return ans;
-    }
-    void add(int l,int r,ll v) { if (l < r) update(1,0,n,l,r,v); }
-    ll get(int l,int r) { return l < r ? query(1,0,n,l,r) : 0; }
-};
-```
+[C++ 源码](../templates/07-graphs/range-add-sum.cpp)
 
 - 先建 HLD，再按原点权 w[u] 对 pos[u] 单点加入。输入满足 $0\leq l\leq r\leq n$，所有和、懒标记及乘积须在 ll 范围内。
 - 路径加用 `h.path(u,v,[&](int l,int r){seg.add(l,r,delta);});`。
@@ -186,43 +59,7 @@ struct RangeAddSum {
 
 复用 HLD 的 size、heavy、pos、rev。颜色需预先离散化到 $[0,C)$，col.size() 与点数相同，C 不超过 GN。
 
-```cpp
-vector<int> subtree_distinct_colors(const Graph& g,
-                                  const vector<int>& col,int C) {
-    HLD h(g);
-    int n = g.n;
-    static int count[GN];
-    fill_n(count,C,0);
-    vector<int> answer(n);
-    int distinct = 0;
-    auto add_vertex = [&](int u,int delta) {
-        int c = col[u];
-        if (count[c] == 0) ++distinct;
-        count[c] += delta;
-        if (count[c] == 0) --distinct;
-    };
-    auto add_subtree = [&](int u,int delta) {
-        for (int i = h.pos[u]; i < h.pos[u]+h.size[u]; ++i)
-            add_vertex(h.rev[i],delta);
-    };
-    auto dfs = [&](auto&& self,int u,bool keep) -> void {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (h.parent[v] == u && v != h.heavy[u]) self(self,v,false);
-        }
-        if (h.heavy[u] != -1) self(self,h.heavy[u],true);
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (h.parent[v] == u && v != h.heavy[u]) add_subtree(v,1);
-        }
-        add_vertex(u,1);
-        answer[u] = distinct;
-        if (!keep) add_subtree(u,-1);
-    };
-    if (n) dfs(dfs,0,false);
-    return answer;
-}
-```
+[C++ 源码](../templates/07-graphs/dsu-on-tree.cpp)
 
 - 顺序为轻子树算完清空、重子树算完保留、加入轻子树与当前点、读取答案、按 keep 决定是否清空。
 - 每个点只会经轻边被重复加入 $\mathcal{O}(\log n)$ 次，单次计数增删 $\mathcal{O}(1)$，总时间 $\mathcal{O}(n\log n)$。
@@ -241,38 +78,7 @@ vector<int> subtree_distinct_colors(const Graph& g,
 
 对子节点哈希做可交换聚合，避免邻接表次序影响结果。下面返回根处哈希，输入为连通树。
 
-```cpp
-u64 tree_mix(u64 x) {
-    x += 0x9e3779b97f4a7c15ULL;
-    x = (x^(x>>30))*0xbf58476d1ce4e5b9ULL;
-    x = (x^(x>>27))*0x94d049bb133111ebULL;
-    return x^(x>>31);
-}
-u64 rooted_tree_hash(const Graph& g,int root,u64 salt) {
-    int n = g.n;
-    static int parent[GN], order[GN];
-    int used = 1; order[0] = root;
-    parent[root] = root;
-    for (int i = 0; i < n; ++i) {
-        int u = order[i];
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (v == parent[u]) continue;
-            parent[v] = u; order[used++] = v;
-        }
-    }
-    static u64 h[GN];
-    for (int i = n-1; i >= 0; --i) {
-        int u = order[i];
-        h[u] = tree_mix(salt);
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (parent[v] == u) h[u] += tree_mix(h[v]^salt);
-        }
-    }
-    return h[root];
-}
-```
+[C++ 源码](../templates/07-graphs/tree-hash.cpp)
 
 - 比较两棵树必须共用同一组 salt，分别用两个独立 salt 得到一对哈希。先比较点数，再比较哈希。
 - 无根树求一个或两个重心，分别以重心为根计算哈希，将结果排序后比较。空树须先单独处理。
@@ -293,46 +99,7 @@ u64 rooted_tree_hash(const Graph& g,int root,u64 salt) {
 
 强连通分量中的任意两点互相可达。将各分量缩成点，得到有向无环图，适合继续做拓扑 DP。
 
-```cpp
-struct SCC {
-    int n, components = 0;
-    Graph g, rg;
-    int comp[GN];
-    SCC(int n) : n(n), g(n), rg(n) {}
-    void add_edge(int u,int v) { g.add(u,v); rg.add(v,u); }
-    void build() {
-        static char seen[GN];
-        fill_n(seen,n,0);
-        vector<int> order;
-        for (int root = 0; root < n; ++root) if (!seen[root]) {
-            vector<pair<int,int>> st{{root,g.head[root]}}; seen[root] = true;
-            while (!st.empty()) {
-                int u = st.back().first;
-                int& i = st.back().second;
-                if (i) {
-                    int v = g.line[i].v; i = g.line[i].next;
-                    if (!seen[v]) { seen[v] = true; st.push_back({v,g.head[v]}); }
-                } else { order.push_back(u); st.pop_back(); }
-            }
-        }
-        fill_n(comp,n,-1); components = 0;
-        for (auto it = order.rbegin(); it != order.rend(); ++it) {
-            int root = *it;
-            if (comp[root] != -1) continue;
-            vector<int> st{root}; comp[root] = components;
-            while (!st.empty()) {
-                int u = st.back(); st.pop_back();
-                for (int id = rg.head[u]; id; id = rg.line[id].next) {
-                    int v = rg.line[id].v;
-                    if (comp[v] != -1) continue;
-                    comp[v] = components; st.push_back(v);
-                }
-            }
-            ++components;
-        }
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/scc.cpp)
 
 - 时间与空间 $\mathcal{O}(n+m)$。这里的分量编号按缩点 DAG 的拓扑顺序，跨分量边 $u\to v$ 满足 comp[u]<comp[v]。
 - 第二趟必须在反图上按第一趟结束时间的逆序遍历。第一趟需要真正的后序，不能把普通 BFS 序倒过来替代。
@@ -351,62 +118,7 @@ struct SCC {
 
 每个非自环边有唯一编号，两条弧以 (arc-1)/2 取得同一个无向边号。本模板忽略自环，点双块按去掉自环后的图定义。
 
-```cpp
-struct UndirectedCuts {
-    int n, timer = 0, top = 0;
-    Graph g;
-    int tin[GN], low[GN], stamp[GN];
-    char cut[GN], bridge[GA/2];
-    int edge_stack[GA/2];
-    vector<vector<int>> blocks;
-    UndirectedCuts(int n)
-        : n(n), g(n) {}
-    int add_edge(int u,int v) {
-        if (u == v) return -1;
-        return (g.add_undirected(u,v)-1)/2;
-    }
-    void dfs(int u,int parent_edge) {
-        tin[u] = low[u] = ++timer;
-        int children = 0;
-        for (int arc = g.head[u]; arc; arc = g.line[arc].next) {
-            int v = g.line[arc].v, id = (arc-1)/2;
-            if (id == parent_edge) continue;
-            if (!tin[v]) {
-                ++children; edge_stack[top++] = id; dfs(v,id);
-                low[u] = min(low[u],low[v]);
-                if (low[v] > tin[u]) bridge[id] = true;
-                if (low[v] >= tin[u]) {
-                    if (parent_edge != -1) cut[u] = true;
-                    int block_id = (int)blocks.size();
-                    vector<int> vertices;
-                    while (true) {
-                        int e = edge_stack[--top];
-                        int a = g.line[2*e+2].v, b = g.line[2*e+1].v;
-                        for (int x : {a,b}) if (stamp[x] != block_id) {
-                            stamp[x] = block_id; vertices.push_back(x);
-                        }
-                        if (e == id) break;
-                    }
-                    blocks.push_back(vertices);
-                }
-            } else if (tin[v] < tin[u]) {
-                low[u] = min(low[u],tin[v]); edge_stack[top++] = id;
-            }
-        }
-        if (parent_edge == -1) cut[u] = children > 1;
-    }
-    void build() {
-        timer = top = 0; blocks.clear();
-        fill_n(tin,n,0); fill_n(low,n,0);
-        fill_n(stamp,n,-1); fill_n(cut,n,0);
-        fill_n(bridge,g.cnt/2,0);
-        for (int u = 0; u < n; ++u) if (!tin[u]) {
-            if (g.head[u] == 0) blocks.push_back(vector<int>{u});
-            dfs(u,-1);
-        }
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/undirected-cuts.cpp)
 
 - 时间与空间 $\mathcal{O}(n+m)$。根是割点当且仅当 DFS 树孩子数>1；非根看是否有孩子 low[v]>=tin[u]。
 - 树边是桥当且仅当 low[v]>tin[u]。必须按父边编号跳过，重边会提供另一条回到父点的边。
@@ -417,25 +129,7 @@ struct UndirectedCuts {
 
 删掉全部桥后，剩下图的连通块就是边双分量。复用上一页的 UndirectedCuts，先调用 build。
 
-```cpp
-vector<int> edge_bcc(const UndirectedCuts& graph) {
-    vector<int> comp(graph.n,-1);
-    int total = 0;
-    for (int root = 0; root < graph.n; ++root) if (comp[root] == -1) {
-        vector<int> st{root}; comp[root] = total;
-        while (!st.empty()) {
-            int u = st.back(); st.pop_back();
-            for (int arc = graph.g.head[u]; arc; arc = graph.g.line[arc].next) {
-                int v = graph.g.line[arc].v, id = (arc-1)/2;
-                if (graph.bridge[id] || comp[v] != -1) continue;
-                comp[v] = total; st.push_back(v);
-            }
-        }
-        ++total;
-    }
-    return comp;
-}
-```
+[C++ 源码](../templates/07-graphs/edge-bcc.cpp)
 
 - 桥两端的分量必不同，把桥连接相应分量，得到桥森林。原图连通时缩点后是一棵树。
 - 两点之间所有路径都经过的桥，对应缩点树上两分量之间的路径。桥数可用树上距离求。
@@ -450,15 +144,7 @@ vector<int> edge_bcc(const UndirectedCuts& graph) {
 
 ## 圆方树（块割森林）
 
-```cpp
-void block_cut_forest(const UndirectedCuts& graph,Graph& forest) {
-    int blocks = (int)graph.blocks.size();
-    forest.init(graph.n + blocks);
-    for (int i = 0; i < blocks; ++i)
-        for (int u : graph.blocks[i])
-            forest.add_undirected(u,graph.n+i);
-}
-```
+[C++ 源码](../templates/07-graphs/block-cut-forest.cpp)
 
 - 先调用 graph.build()，按圆方树建成后的点和弧数核对 GN、GA。非连通图得到森林。该“所有原顶点+所有块”的版本中，原图孤立点与它的单点块相连。
 - 两原点之间的圆方树路径描述依次经过的割点和点双块。做“必经点”计数时，注意是否排除两个询问端点。
@@ -471,30 +157,7 @@ void block_cut_forest(const UndirectedCuts& graph,Graph& forest) {
 
 变量 x_i 的两个文字编号为 2i（x_i=false）与 2i+1（x_i=true）。互为否定用 id^1。复用前面的 SCC。
 
-```cpp
-struct TwoSAT {
-    int n;
-    SCC graph;
-    TwoSAT(int n) : n(n), graph(2*n) {}
-    void add_or(int i,bool a,int j,bool b) {
-        int x = 2*i+(int)a, y = 2*j+(int)b;
-        graph.add_edge(x^1,y); graph.add_edge(y^1,x);
-    }
-    void imply(int i,bool a,int j,bool b) {
-        add_or(i,!a,j,b);                  // (x_i=a) => (x_j=b)
-    }
-    void force(int i,bool value) { add_or(i,value,i,value); }
-    optional<vector<int>> solve() {
-        graph.build();
-        vector<int> answer(n);
-        for (int i = 0; i < n; ++i) {
-            if (graph.comp[2*i] == graph.comp[2*i+1]) return nullopt;
-            answer[i] = graph.comp[2*i+1] > graph.comp[2*i];
-        }
-        return answer;
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/two-sat.cpp)
 
 - 子句 $A\vee B$ 加边 $\neg A\to B$、$\neg B\to A$。本实现 SCC 编号为正拓扑序，故选择编号更大的文字为真。
 - 同一变量与其否定在同一 SCC 中，当且仅当无解。算法为 $\mathcal{O}(n+m)$，m 为子句数。
@@ -510,13 +173,7 @@ struct TwoSAT {
 
 ## 例子
 
-```cpp
-TwoSAT sat(2);
-sat.add_or(0,true,1,true);       // x0 or x1
-sat.imply(0,true,1,false);       // x0 => not x1
-sat.force(0,true);
-auto solution = sat.solve();    // {1,0}
-```
+[C++ 源码](../templates/07-graphs/two-sat-example.cpp)
 
 # 图论 · 二分图最大匹配
 
@@ -524,58 +181,7 @@ auto solution = sat.solve();    // {1,0}
 
 左点编号 $[0,L)$，右点编号 $[0,R)$，g 只建左到右的边。L、R 均不超过 GN。时间 $\mathcal{O}((L+R+m)\sqrt{L+R})$。
 
-```cpp
-struct HopcroftKarp {
-    int L, R, shortest;
-    const int INF = INT_MAX/4;
-    Graph g;
-    int left_match[GN], right_match[GN], dist[GN], current[GN];
-    HopcroftKarp(int L,int R) : L(L), R(R), g(L) {}
-    void add_edge(int u,int v) { g.add(u,v); }
-    bool bfs() {
-        queue<int> q; shortest = INF;
-        for (int u = 0; u < L; ++u) {
-            dist[u] = left_match[u] == -1 ? 0 : INF;
-            if (dist[u] == 0) q.push(u);
-        }
-        while (!q.empty()) {
-            int u = q.front(); q.pop();
-            if (dist[u] >= shortest) continue;
-            for (int id = g.head[u]; id; id = g.line[id].next) {
-                int v = g.line[id].v;
-                int mate = right_match[v];
-                if (mate == -1) shortest = dist[u]+1;
-                else if (dist[mate] == INF) {
-                    dist[mate] = dist[u]+1; q.push(mate);
-                }
-            }
-        }
-        return shortest != INF;
-    }
-    bool dfs(int u) {
-        for (int& id = current[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v, mate = right_match[v];
-            bool good = mate == -1 ? dist[u]+1 == shortest
-                         : dist[mate] == dist[u]+1 && dfs(mate);
-            if (good) {
-                left_match[u] = v; right_match[v] = u; return true;
-            }
-        }
-        dist[u] = INF; return false;
-    }
-    int solve() {
-        fill_n(left_match,L,-1);
-        fill_n(right_match,R,-1);
-        int answer = 0;
-        while (bfs()) {
-            copy_n(g.head,L,current);
-            for (int u = 0; u < L; ++u)
-                if (left_match[u] == -1 && dfs(u)) ++answer;
-        }
-        return answer;
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/hopcroft-karp.cpp)
 
 - BFS 找最短增广路长度，DFS 只走分层边，一轮求多条最短增广路。匹配中每个点最多关联一条匹配边。
 - 下一页给出逐个左点找增广路的匈牙利算法（Kuhn）。
@@ -587,30 +193,7 @@ struct HopcroftKarp {
 
 左部用 Graph(L) 建链式前向星，只加左到右的边。左、右各自从 0 编号，R 不超过 GN。返回最大匹配数及右点匹配到的左点，-1 表示未匹配。
 
-```cpp
-pair<int,vector<int>> kuhn(const Graph& g,int R) {
-    vector<int> right_match(R,-1);
-    static int seen[GN];
-    fill_n(seen,R,-1);
-    auto augment = [&](auto&& self,int u,int round) -> bool {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            if (seen[v] == round) continue;
-            seen[v] = round;
-            if (right_match[v] == -1 ||
-                self(self,right_match[v],round)) {
-                right_match[v] = u;
-                return true;
-            }
-        }
-        return false;
-    };
-    int matches = 0;
-    for (int u = 0; u < g.n; ++u)
-        if (augment(augment,u,u)) ++matches;
-    return {matches,right_match};
-}
-```
+[C++ 源码](../templates/07-graphs/kuhn.cpp)
 
 - 右点尚未匹配时直接占用。右点已匹配时，先尝试给原左点换一个搭档，递归成功后再改匹配。
 - 每个左部起点用自己的编号作时间戳，递归共用这个时间戳。每轮最多访问每个右点一次。
@@ -621,25 +204,7 @@ pair<int,vector<int>> kuhn(const Graph& g,int R) {
 
 ## BFS 染色，检查每个连通分量
 
-```cpp
-optional<vector<int>> bipartite_color(const Graph& g) {
-    int n = g.n;
-    vector<int> color(n,-1);
-    for (int root = 0; root < n; ++root) if (color[root] == -1) {
-        queue<int> q; q.push(root); color[root] = 0;
-        while (!q.empty()) {
-            int u = q.front(); q.pop();
-            for (int id = g.head[u]; id; id = g.line[id].next) {
-                int v = g.line[id].v;
-                if (color[v] == -1) {
-                    color[v] = color[u]^1; q.push(v);
-                } else if (color[v] == color[u]) return nullopt;
-            }
-        }
-    }
-    return color;
-}
-```
+[C++ 源码](../templates/07-graphs/bipartite-color.cpp)
 
 - 无向图为二分图当且仅当没有奇环。自环直接破坏二分性，重边不影响判定。时间 $\mathcal{O}(n+m)$。
 - 一般图的匹配不能直接使用二分图算法。给定固定左右部时，先核对每条边都跨越左右部。
@@ -650,30 +215,7 @@ optional<vector<int>> bipartite_color(const Graph& g) {
 - 求出最大匹配后，从所有未匹配左点出发，沿“左到右走非匹配边，右到左走匹配边”搜索。
 - 可达左点集合为 Z_L、可达右点集合为 Z_R，最小点覆盖为 $(L\setminus Z_L)\cup Z_R$。
 
-```cpp
-// Call hk.solve() first; return selected left/right vertex sets.
-pair<vector<int>,vector<int>> minimum_vertex_cover(const HopcroftKarp& hk) {
-    static char a[GN], b[GN];
-    fill_n(a,hk.L,0); fill_n(b,hk.R,0);
-    queue<int> q;
-    for (int u = 0; u < hk.L; ++u)
-        if (hk.left_match[u] == -1) { a[u] = true; q.push(u); }
-    while (!q.empty()) {
-        int u = q.front(); q.pop();
-        for (int id = hk.g.head[u]; id; id = hk.g.line[id].next) {
-            int v = hk.g.line[id].v;
-            if (hk.left_match[u] == v || b[v]) continue;
-            b[v] = true;
-            int w = hk.right_match[v];
-            if (w != -1 && !a[w]) { a[w] = true; q.push(w); }
-        }
-    }
-    vector<int> left, right;
-    for (int u = 0; u < hk.L; ++u) if (!a[u]) left.push_back(u);
-    for (int v = 0; v < hk.R; ++v) if (b[v]) right.push_back(v);
-    return {left,right};
-}
-```
+[C++ 源码](../templates/07-graphs/minimum-vertex-cover.cpp)
 
 - Hall 定理，左部存在全覆盖匹配当且仅当任意 $S\subseteq L$ 均满足 $|N(S)|\geq|S|$。
 - DAG 最小顶点不交路径覆盖，拆左右副本，每条有向边接左 u 到右 v，答案为 $n-|M|$。一般有向图先满足 DAG 条件。
@@ -685,52 +227,7 @@ pair<vector<int>,vector<int>> minimum_vertex_cover(const HopcroftKarp& hk) {
 
 用 ForwardStar<ll>(n) 建左到右的带权边，右部有 m 点且 m 不超过 GN 和 KM_CAP。要求 $n\leq m$，每行选一个不同的列，求最小总费用。返回总费用与每行所选列。
 
-```cpp
-pair<ll,vector<int>> hungarian(const ForwardStar<ll>& g,int m) {
-    int n = g.n;
-    constexpr int KM_CAP = 505;
-    static ll cost[KM_CAP][KM_CAP];
-    for (int u = 0; u < n; ++u) {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            const auto& edge = g.line[id];
-            cost[u][edge.v] = edge.val;
-        }
-    }
-    const ll INF = LLONG_MAX/4;
-    static ll u[GN+1], v[GN+1], best[GN+1];
-    static int p[GN+1], way[GN+1];
-    static char used[GN+1];
-    fill_n(u,n+1,0); fill_n(v,m+1,0); fill_n(p,m+1,0);
-    for (int i = 1; i <= n; ++i) {
-        p[0] = i;
-        int j0 = 0;
-        fill_n(best,m+1,INF); fill_n(used,m+1,0);
-        do {
-            used[j0] = true;
-            int i0 = p[j0], j1 = 0;
-            ll delta = INF;
-            for (int j = 1; j <= m; ++j) if (!used[j]) {
-                ll reduced = cost[i0-1][j-1]-u[i0]-v[j];
-                if (reduced < best[j]) { best[j] = reduced; way[j] = j0; }
-                if (best[j] < delta) { delta = best[j]; j1 = j; }
-            }
-            for (int j = 0; j <= m; ++j) {
-                if (used[j]) { u[p[j]] += delta; v[j] -= delta; }
-                else best[j] -= delta;
-            }
-            j0 = j1;
-        } while (p[j0] != 0);
-        do {
-            int previous = way[j0];
-            p[j0] = p[previous]; j0 = previous;
-        } while (j0 != 0);
-    }
-    vector<int> assignment(n,-1);
-    for (int j = 1; j <= m; ++j)
-        if (p[j]) assignment[p[j]-1] = j-1;
-    return {-v[0],assignment};
-}
-```
+[C++ 源码](../templates/07-graphs/hungarian.cpp)
 
 - 时间 $\mathcal{O}(n^2m)$，方阵为 $\mathcal{O}(n^3)$，额外空间 $\mathcal{O}(nm+n+m)$。可以有负费用。
 - 每个左点到每个右点恰加一条边。内部构造费用矩阵供势能算法使用。费用、势能、费用差与总费用均须能用 ll 表示，并远小于 INF。
@@ -741,72 +238,7 @@ pair<ll,vector<int>> hungarian(const ForwardStar<ll>& g,int m) {
 
 # 图论 · 网络流 Dinic 最大流
 
-```cpp
-#define int long long
-int n, m, s, t;
-struct edge {
-  int v, next, val;
-} line[10010];
-int cnt = 1, head[210], cur[210];
-void add(int u, int v, int w) {
-  cnt++;
-  line[cnt].v = v;
-  line[cnt].val = w;
-  line[cnt].next = head[u];
-  head[u] = cnt;
-}
-int depth[210];
-
-bool bfs() {
-  std::queue<int> q;
-  memset(depth, -1, sizeof(depth));
-  q.push(s);
-  depth[s] = 0;
-  while (!q.empty()) {
-    int u = q.front();
-    cur[u] = head[u];
-    q.pop();
-    for (int i = head[u]; i; i = line[i].next) {
-      int v = line[i].v;
-      if (depth[v] < 0 && line[i].val > 0) {
-        depth[v] = depth[u] + 1;
-        q.push(v);
-      }
-    }
-  }
-  return depth[t] >= 0;
-}
-
-int dfs(int u, int flow) {
-  int allowflow = 0;
-  if (u == t) {
-    return flow;
-  }
-  for (int i = cur[u]; i && flow; i = line[i].next) {
-    cur[u] = i;
-    int v = line[i].v;
-    if (depth[v] == depth[u] + 1 && line[i].val > 0) {
-      int tmp = dfs(v, std::min(flow, line[i].val));
-      if (tmp == 0) {
-        depth[v] = -1;
-      }
-      line[i].val -= tmp;
-      line[i ^ 1].val += tmp;
-      allowflow += tmp;
-      flow -= tmp;
-    }
-  }
-  return allowflow;
-}
-
-int dinic() {
-  int ans = 0;
-  while (bfs()) {
-    ans += dfs(s, LLONG_MAX);
-  }
-  return ans;
-}
-```
+[C++ 源码](../templates/07-graphs/dinic.cpp)
 
 - 每条有向边连续调用 `add(u,v,w); add(v,u,0);`，保证 `i^1` 找到反向弧。
 - 点号为 0 到 209，最多 5004 条原始边。多测清空 head 并设 cnt=1。
@@ -820,24 +252,7 @@ int dinic() {
 - 最大流最小割定理，最大 s-t 流值等于最小 s-t 割容量。运行 dinic() 到没有增广路后，再从残量网络取最小割。
 - 调用 residual_reachable() 后，seen[u] 表示 u 属于源侧 S。原始边从 S 指向 T 的边构成一个最小割。
 
-```cpp
-// Call dinic() first. Read the source side of the final residual graph.
-bool seen[210];
-void residual_reachable() {
-    memset(seen,0,sizeof(seen));
-    std::queue<int> q;
-    q.push(s); seen[s] = true;
-    while (!q.empty()) {
-        int u = q.front(); q.pop();
-        for (int i = head[u]; i; i = line[i].next) {
-            int v = line[i].v;
-            if (line[i].val > 0 && !seen[v]) {
-                seen[v] = true; q.push(v);
-            }
-        }
-    }
-}
-```
+[C++ 源码](../templates/07-graphs/minimum-cut.cpp)
 
 - 加边前记下正向弧编号 cnt+1，并保存原始容量。枚举割边时只看原始正向弧。
 - 反向弧初始容量为 0 时，原始边 i 的流量为 line[i^1].val。也可用原始容量减去 line[i].val。
@@ -863,56 +278,7 @@ void residual_reachable() {
 
 要求 s 与 t 不同，且从 s 可达的部分没有负费用环。所有可达路径距离与费用差须在 ll 范围内且绝对值远小于 INF。总费用用 i128。
 
-```cpp
-struct MinCostFlow {
-    struct Edge { int v, next; ll val, cost; } line[GA]{};
-    int n, cnt = 1, head[GN]{};
-    MinCostFlow(int n) : n(n) {}
-    void add(int u,int v,ll w,ll cost) {
-        ++cnt; line[cnt] = {v,head[u],w,cost}; head[u] = cnt;
-    }
-    int add_edge(int u,int v,ll cap,ll cost) {
-        int id = cnt+1;
-        add(u,v,cap,cost); add(v,u,0,-cost);
-        return id;
-    }
-    pair<ll,i128> flow(int s,int t,ll limit=LLONG_MAX) {
-        const ll INF = LLONG_MAX/4;
-        ll total = 0;
-        i128 cost = 0;
-        while (total < limit) {
-            static ll dist[GN];
-            static int previous[GN];
-            static char in_queue[GN];
-            fill_n(dist,n,INF); fill_n(previous,n,0);
-            fill_n(in_queue,n,0);
-            queue<int> q; q.push(s); in_queue[s] = true; dist[s] = 0;
-            while (!q.empty()) {
-                int u = q.front(); q.pop(); in_queue[u] = false;
-                for (int id = head[u]; id; id = line[id].next) {
-                    const auto& edge = line[id];
-                    if (edge.val > 0 && dist[edge.v] > dist[u]+edge.cost) {
-                        dist[edge.v] = dist[u]+edge.cost;
-                        previous[edge.v] = id;
-                        if (!in_queue[edge.v]) {
-                            in_queue[edge.v] = true; q.push(edge.v);
-                        }
-                    }
-                }
-            }
-            if (previous[t] == 0) break;
-            ll add = limit-total;
-            for (int v = t; v != s; v = line[previous[v]^1].v)
-                add = min(add,line[previous[v]].val);
-            for (int v = t; v != s; v = line[previous[v]^1].v) {
-                int id = previous[v]; line[id].val -= add; line[id^1].val += add;
-            }
-            total += add; cost += (i128)add*dist[t];
-        }
-        return {total,cost};
-    }
-};
-```
+[C++ 源码](../templates/07-graphs/min-cost-flow.cpp)
 
 - 容量上限 GN、GA 见第 6 页。容量非负，费用可负，反向费用必须取负；输入费用不能为 LLONG_MIN。返回本次新增流量及新增费用。
 - limit=K 表示尽量发送 K 单位，返回流量<K 表示无法完成要求。默认发送到无路可增广，得到最小费用最大流。

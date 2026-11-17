@@ -6,42 +6,7 @@
 
 b[i] 的最高有效位是 i。rank 是独立向量个数，dependent 记录原始输入中是否存在非空子集异或为 0。
 
-```cpp
-struct XorBasis {
-    u64 b[64]{};
-    int rank = 0;
-    bool dependent = false;
-    bool insert(u64 x) {
-        for (int i = 63; i >= 0; --i) if ((x>>i)&1ULL) {
-            if (!b[i]) { b[i] = x; ++rank; return true; }
-            x ^= b[i];
-        }
-        dependent = true;
-        return false;
-    }
-    bool contains(u64 x) const {
-        for (int i = 63; i >= 0; --i) if ((x>>i)&1ULL) {
-            if (!b[i]) return false;
-            x ^= b[i];
-        }
-        return true;
-    }
-    u64 max_xor(u64 seed=0) const {
-        for (int i = 63; i >= 0; --i) seed = max(seed,seed^b[i]);
-        return seed;
-    }
-    u64 min_xor(u64 seed=0) const {
-        for (int i = 63; i >= 0; --i) seed = min(seed,seed^b[i]);
-        return seed;
-    }
-    void merge(const XorBasis& other) {
-        dependent = dependent || other.dependent;
-        for (u64 x : other.b) if (x) insert(x);
-    }
-    void ordered_vectors(u64 out[]) const;
-    optional<u64> kth(u128 k,bool nonempty=false) const;
-};
-```
+[C++ 源码](../templates/12-xor-basis/xor-basis.cpp)
 
 - insert 返回是否增加秩。插入 0 或重复/相关向量会返回 false，并使 dependent=true；输入是否被记录不能只看返回值。
 - contains(0) 总为 true，因为允许空集。max_xor(seed) 求 seed 与任意子集异或后的最大值，min_xor 同理。
@@ -61,29 +26,7 @@ struct XorBasis {
 
 先按主元从低到高消去其他基向量的低位主元，再将非零基向量按主元升序收集。k 的二进制位对应选择哪些向量。
 
-```cpp
-void XorBasis::ordered_vectors(u64 out[]) const {
-    u64 a[64];
-    copy_n(b,64,a);
-    for (int i = 0; i < 64; ++i) if (a[i])
-        for (int j = 0; j < i; ++j)
-            if ((a[i]>>j)&1ULL) a[i] ^= a[j];
-    int used = 0;
-    for (u64 x : a) if (x) out[used++] = x;
-}
-optional<u64> XorBasis::kth(u128 k,bool nonempty) const {
-    u128 total = (u128)1<<rank;
-    bool skip_zero = nonempty && !dependent;
-    if (k >= total-(u128)skip_zero) return nullopt;
-    k += (u128)skip_zero;
-    u64 a[64];
-    ordered_vectors(a);
-    u64 answer = 0;
-    for (int i = 0; i < rank; ++i)
-        if ((k>>i)&(u128)1) answer ^= a[i];
-    return answer;
-}
-```
+[C++ 源码](../templates/12-xor-basis/kth-xor.cpp)
 
 - k 从 0 开始，枚举的是不同异或值。题目若从 1 开始，先检查 k>=1，再传 k-1；越界返回空值。
 - 默认允许空集，k=0 得到 0。nonempty=true 时，仅在不存在非空零异或时跳过 0。
@@ -93,15 +36,7 @@ optional<u64> XorBasis::kth(u128 k,bool nonempty) const {
 
 ## 使用例子
 
-```cpp
-XorBasis basis;
-basis.insert(3); basis.insert(5); basis.insert(6);
-// all distinct results: {0,3,5,6}; 3^5^6 == 0
-bool can = basis.contains(7);             // false
-auto first = basis.kth(0,true);           // 0, from a nonempty subset
-auto third = basis.kth(2);                // 5
-u64 largest = basis.max_xor();            // 6
-```
+[C++ 源码](../templates/12-xor-basis/xor-basis-example.cpp)
 
 ## 使用线性基时的约束
 

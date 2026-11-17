@@ -4,47 +4,7 @@
 
 输入 m 行增广矩阵，每行 n 个系数与一个右端项，使用 ld=long double。返回一个特解与零空间基，全部解为特解加零空间基的任意线性组合。
 
-```cpp
-struct RealSystem {
-    bool consistent;
-    int rank;
-    vector<ld> solution;
-    vector<vector<ld>> nullspace;
-};
-RealSystem real_gauss(vector<vector<ld>> a,int n,ld eps=1e-12L) {
-    int m = (int)a.size(), row = 0;
-    vector<int> where(n,-1);
-    for (int col = 0; col < n && row < m; ++col) {
-        int pivot = row;
-        for (int i = row+1; i < m; ++i)
-            if (fabsl(a[i][col]) > fabsl(a[pivot][col])) pivot = i;
-        if (fabsl(a[pivot][col]) <= eps) continue;
-        swap(a[pivot],a[row]);
-        ld value = a[row][col];
-        for (int j = col; j <= n; ++j) a[row][j] /= value;
-        for (int i = 0; i < m; ++i) if (i != row) {
-            ld factor = a[i][col];
-            if (fabsl(factor) > eps)
-                for (int j = col+1; j <= n; ++j)
-                    a[i][j] -= factor*a[row][j];
-            a[i][col] = 0;
-        }
-        where[col] = row++;
-    }
-    for (int i = row; i < m; ++i)
-        if (fabsl(a[i][n]) > eps) return {false,row,{},{}};
-    RealSystem result{true,row,vector<ld>(n),{}};
-    for (int j = 0; j < n; ++j)
-        if (where[j] != -1) result.solution[j] = a[where[j]][n];
-    for (int f = 0; f < n; ++f) if (where[f] == -1) {
-        vector<ld> basis(n); basis[f] = 1;
-        for (int j = 0; j < n; ++j)
-            if (where[j] != -1) basis[j] = -a[where[j]][f];
-        result.nullspace.push_back(basis);
-    }
-    return result;
-}
-```
+[C++ 源码](../templates/10-gaussian-elimination/real-gauss.cpp)
 
 - consistent=false 表示出现 $0=b\ne0$，无解。有解且 rank=n 为唯一解，rank<n 时有 n-rank 个自由变量。
 - 选绝对值最大的主元可减轻误差，eps 必须结合矩阵尺度。数据病态时应缩放并检查原方程残差，数值秩并非精确代数秩。
@@ -58,47 +18,7 @@ RealSystem real_gauss(vector<vector<ld>> a,int n,ld eps=1e-12L) {
 
 p 必须为素数，每行 n+1 项。复用 norm、mul_mod、pow_mod，返回特解及零空间基，所有运算在模 p 下进行。
 
-```cpp
-struct ModSystem {
-    bool consistent;
-    int rank;
-    vector<ll> solution;
-    vector<vector<ll>> nullspace;
-};
-ModSystem mod_gauss(vector<vector<ll>> a,int n,ll p) {
-    int m = (int)a.size(), row = 0;
-    for (auto& r : a) for (ll& x : r) x = norm(x,p);
-    vector<int> where(n,-1);
-    for (int col = 0; col < n && row < m; ++col) {
-        int pivot = row;
-        while (pivot < m && a[pivot][col] == 0) ++pivot;
-        if (pivot == m) continue;
-        swap(a[pivot],a[row]);
-        ll inv = pow_mod(a[row][col],p-2,p);
-        for (int j = col; j <= n; ++j)
-            a[row][j] = mul_mod(a[row][j],inv,p);
-        for (int i = 0; i < m; ++i) if (i != row && a[i][col] != 0) {
-            ll factor = a[i][col];
-            for (int j = col+1; j <= n; ++j)
-                a[i][j] = norm((i128)a[i][j]-mul_mod(factor,a[row][j],p),p);
-            a[i][col] = 0;
-        }
-        where[col] = row++;
-    }
-    for (int i = row; i < m; ++i)
-        if (a[i][n] != 0) return {false,row,{},{}};
-    ModSystem result{true,row,vector<ll>(n),{}};
-    for (int j = 0; j < n; ++j)
-        if (where[j] != -1) result.solution[j] = a[where[j]][n];
-    for (int f = 0; f < n; ++f) if (where[f] == -1) {
-        vector<ll> basis(n); basis[f] = 1;
-        for (int j = 0; j < n; ++j)
-            if (where[j] != -1) basis[j] = norm(-a[where[j]][f],p);
-        result.nullspace.push_back(basis);
-    }
-    return result;
-}
-```
+[C++ 源码](../templates/10-gaussian-elimination/modular-gauss.cpp)
 
 - 有解时解的个数为 $p^{n-r}$，r 为秩。唯一解等价于 r=n。n=0 时，所有右端为 0 才有唯一的空解。
 - 消元不能只交换列却不记录变量置换。此实现只交换行，where 显式记录每个主元列对应的行。
@@ -111,34 +31,7 @@ ModSystem mod_gauss(vector<vector<ll>> a,int n,ll p) {
 
 系数与右端均为 0/1，加减都是异或。增广矩阵第 0..n-1 位为系数，第 n 位为右端，最大变量数为 512。
 
-```cpp
-constexpr int XOR_VARIABLES = 512;
-struct XorSystem {
-    bool consistent;
-    int rank;
-    bitset<XOR_VARIABLES> solution;
-};
-XorSystem xor_gauss(vector<bitset<XOR_VARIABLES+1>> a,int n) {
-    int m = (int)a.size(), row = 0;
-    int where[XOR_VARIABLES];
-    fill_n(where,n,-1);
-    for (int col = 0; col < n && row < m; ++col) {
-        int pivot = row;
-        while (pivot < m && !a[pivot][col]) ++pivot;
-        if (pivot == m) continue;
-        swap(a[pivot],a[row]);
-        for (int i = 0; i < m; ++i)
-            if (i != row && a[i][col]) a[i] ^= a[row];
-        where[col] = row++;
-    }
-    for (int i = row; i < m; ++i)
-        if (a[i][n]) return {false,row,{}};
-    XorSystem result{true,row,{}};
-    for (int j = 0; j < n; ++j)
-        if (where[j] != -1) result.solution[j] = a[where[j]][n];
-    return result;
-}
-```
+[C++ 源码](../templates/10-gaussian-elimination/xor-gauss.cpp)
 
 - 调用前须把无关高位清零，并保证每行的右端位放在同一位置 n。`a[i][n]=rhs` 不是固定放在 bit 512。
 - 返回一个自由变量全部取 0 的特解。有解时解数为 $2^{n-r}$，唯一解等价于 r=n。

@@ -49,44 +49,7 @@
 
 ## 可复用的模乘、快速幂、扩展 gcd
 
-```cpp
-using ll = long long;
-using i128 = __int128_t;
-using u64 = unsigned long long;
-using u128 = __uint128_t;
-ll norm(i128 x, ll m) {                 // m >= 1
-    x %= m;
-    if (x < 0) x += m;
-    return (ll)x;
-}
-ll mul_mod(ll a, ll b, ll m) {
-    return norm((i128)a * b, m);
-}
-ll pow_mod(ll a, u64 e, ll m) {
-    ll ans = 1 % m;
-    a = norm(a, m);
-    for (; e; e >>= 1, a = mul_mod(a, a, m))
-        if (e & 1) ans = mul_mod(ans, a, m);
-    return ans;
-}
-i128 exgcd(i128 a, i128 b, i128& x, i128& y) { // a,b >= 0
-    if (!b) { x = 1; y = 0; return a; }
-    i128 u, v;
-    i128 g = exgcd(b, a % b, u, v);
-    x = v; y = u - (a / b) * v;
-    return g;
-}
-ll inverse(ll a, ll m) {                 // -1 means not invertible
-    if (m == 1) return 0;
-    i128 x, y;
-    if (exgcd(norm(a, m), m, x, y) != 1) return -1;
-    return norm(x, m);
-}
-i128 floor_div(i128 a, i128 b) {         // b > 0
-    i128 q = a / b;
-    return q - (a % b < 0);
-}
-```
+[C++ 源码](../templates/05-number-theory/modular-arithmetic.cpp)
 
 - 模$2^w$可用 w 位无符号溢出实现。溢出不等于模任意 m，带符号溢出是未定义行为。
 - 加倍法模乘逐位处理乘数，$\mathcal{O}(\log  m)$。加法也须防溢出，不能直接让 a+a 溢出。
@@ -122,16 +85,7 @@ i128 floor_div(i128 a, i128 b) {         // b > 0
 - g=gcd(a,m)。若$g\nmid b$则无解，否则除以 g，在模 m/g 下求逆。
 - 令 t=m/g，$x_0=\left(\frac{a}{g}\right)^{-1}\frac{b}{g}\;\mathrm{mod}\; t$。模 m 恰有 g 个解，$x=x_0+kt$，$0\leq k<g$。
 
-```cpp
-optional<pair<ll, ll>> linear_congruence(ll a, ll b, ll m) {
-    a = norm(a, m); b = norm(b, m);
-    ll g = gcd(a, m);
-    if (b % g) return nullopt;
-    ll period = m / g;
-    ll x = mul_mod(b / g, inverse(a / g, period), period);
-    return pair<ll, ll>{x, period};       // x + k*period
-}
-```
+[C++ 源码](../templates/05-number-theory/linear-congruence.cpp)
 
 - 素数 p 下，$a\nequiv 0$时 $a^{-1}\equiv a^{p-2}\; (\mathrm{mod}\ p)$。一般模数用 exgcd。
 - p 为素数，$1\leq i<p$，inv[1]=1，inv[i]=-(p/i)·inv[p%i] mod p，可线性求一段逆元。
@@ -145,38 +99,7 @@ optional<pair<ll, ll>> linear_congruence(ll a, ll b, ll m) {
 - Miller-Rabin 将 n-1 写成$d\cdot 2^s$，d 为奇数。对底 a，先求$x=a^d$。x=1 或 -1 则通过，否则反复平方寻找 -1。
 - 下列 7 个底配合精确模乘，覆盖整个无符号 64 位范围。判素数为确定性结果。
 
-```cpp
-u64 mul64(u64 a, u64 b, u64 m) { return (u128)a * b % m; }
-u64 pow64(u64 a, u64 e, u64 m) {
-    u64 r = 1 % m;
-    for (; e; e >>= 1, a = mul64(a, a, m))
-        if (e & 1) r = mul64(r, a, m);
-    return r;
-}
-bool is_prime(u64 n) {
-    if (n < 2) return false;
-    for (u64 p : {2ULL,3ULL,5ULL,7ULL,11ULL,13ULL,17ULL,19ULL,
-                  23ULL,29ULL,31ULL,37ULL}) {
-        if (n % p == 0) return n == p;
-    }
-    u64 d = n - 1;
-    int s = __builtin_ctzll(d);
-    d >>= s;
-    for (u64 a : {2ULL,325ULL,9375ULL,28178ULL,450775ULL,
-                  9780504ULL,1795265022ULL}) {
-        if (a % n == 0) continue;
-        u64 x = pow64(a % n, d, n);
-        if (x == 1 || x == n - 1) continue;
-        bool pass = false;
-        for (int r = 1; r < s; ++r) {
-            x = mul64(x, x, n);
-            if (x == n - 1) { pass = true; break; }
-        }
-        if (!pass) return false;
-    }
-    return true;
-}
-```
+[C++ 源码](../templates/05-number-theory/miller-rabin.cpp)
 
 - 反素数是约数个数严格超过所有更小正整数的数。搜索$n\leq N$内约数最多的最小数时，连续使用最小的质数。
 - 反素数分解中的指数非增，$e_2\geq e_3\geq e_5\geq\cdots$。DFS 时枚举下一质数的指数不超过上一个指数，乘前用 N/p 判界。
@@ -188,32 +111,7 @@ bool is_prime(u64 n) {
 
 复用上一页的 `mul64`、`pow64`、`is_prime`。输入$n\geq 1$，返回带重数的素因子，之后排序统计指数。
 
-```cpp
-mt19937_64 nt_rng(chrono::steady_clock::now().time_since_epoch().count());
-u64 rho(u64 n) {                         // n is composite
-    if (n % 2 == 0) return 2;
-    if (n % 3 == 0) return 3;
-    while (true) {
-        u64 c = nt_rng() % (n - 1) + 1;
-        u64 x = nt_rng() % (n - 2) + 2, y = x, d = 1;
-        auto f = [&](u64 v) {
-            return (u64)(((u128)mul64(v, v, n) + c) % n);
-        };
-        while (d == 1) {
-            x = f(x); y = f(f(y));
-            u64 diff = x > y ? x - y : y - x;
-            d = gcd(diff, n);
-        }
-        if (d != n) return d;
-    }
-}
-void factor(u64 n, vector<u64>& out) {
-    if (n == 1) return;
-    if (is_prime(n)) { out.push_back(n); return; }
-    u64 d = rho(n);
-    factor(d, out); factor(n / d, out);
-}
-```
+[C++ 源码](../templates/05-number-theory/pollard-rho.cpp)
 
 - Floyd 每次移动一步与两步，借助 gcd(|x-y|,n) 暴露非平凡因子。gcd=n 时换随机参数重来。
 - Pollard Rho 是随机算法。找到最小素因子 p 的常见期望步数为$\mathcal{O}(\sqrt{p})$，半素数常写成期望$\mathcal{O}(n^{1/4})$，不保证最坏运行时间。
@@ -231,33 +129,7 @@ void factor(u64 n, vector<u64>& out) {
 
 ## $\varphi $、$\mu $的线性筛
 
-```cpp
-struct NumberSieve {
-    static constexpr int MAX_N = 1000000;
-    int lp[MAX_N+1]{}, phi[MAX_N+1]{}, mu[MAX_N+1]{};
-    vector<int> primes;
-    int limit;
-    NumberSieve(int n) : limit(n) {
-        if (n >= 1) phi[1] = mu[1] = 1;
-        for (int i = 2; i <= n; ++i) {
-            if (!lp[i]) {
-                lp[i] = i; primes.push_back(i);
-                phi[i] = i - 1; mu[i] = -1;
-            }
-            for (int p : primes) {
-                if (p > n / i) break;
-                int v = i * p;
-                lp[v] = p;
-                if (i % p == 0) {
-                    phi[v] = phi[i] * p; mu[v] = 0;
-                    break;
-                }
-                phi[v] = phi[i] * (p - 1); mu[v] = -mu[i];
-            }
-        }
-    }
-};
-```
+[C++ 源码](../templates/05-number-theory/linear-sieve.cpp)
 
 - n 不超过 MAX_N，筛表对象放全局或声明为 static。
 - Eratosthenes 从$p^{2}$开始标记，$\mathcal{O}(N \log  \log  N)$。线性筛每个合数由其最小素因子产生一次，$\mathcal{O}(N)$。
@@ -294,17 +166,7 @@ struct NumberSieve {
 - 有原根的正整数模数恰为 1、2、4、$p^k$、$2p^k$，其中 p 为奇素数；m=1 常单独按平凡群处理。
 - g 为原根当且仅当对$\varphi (m)$的每个不同素因子 q，都有$g^{\varphi (m)/q}\nequiv 1$。原根个数为$\varphi (\varphi (m))$。
 
-```cpp
-ll multiplicative_order(ll a, ll m, ll phi_m,
-                        const vector<ll>& prime_divisors) {
-    if (gcd(a, m) != 1) return -1;
-    ll order = phi_m;
-    for (ll q : prime_divisors)
-        while (order % q == 0 && pow_mod(a, order/q, m) == 1)
-            order /= q;
-    return order;
-}
-```
+[C++ 源码](../templates/05-number-theory/multiplicative-order.cpp)
 
 ## Carmichael 函数
 
@@ -324,21 +186,7 @@ ll multiplicative_order(ll a, ll m, ll phi_m,
 
 当前$x\equiv r \;\mathrm{mod}\; M$，新方程$x\equiv a \;\mathrm{mod}\; m$。令 g=gcd(M,m)，有解当且仅当 g|(a-r)。令 x=r+Mt，解 $\frac{M}{g} t\equiv\frac{a-r}{g}\; (\mathrm{mod}\ m/g)$。
 
-```cpp
-// Uses i128 internally; every combined modulus must fit in long long.
-optional<pair<ll,ll>> crt_merge(ll r, ll M, ll a, ll m) {
-    r = norm(r, M); a = norm(a, m);
-    i128 x, y;
-    ll g = (ll)exgcd(M, m, x, y);
-    i128 diff = (i128)a - r;
-    if (diff % g) return nullopt;
-    ll q = m / g;
-    ll step = norm((diff / g) * x, q);
-    i128 mod = (i128)M * q;
-    ll value = norm((i128)r + (i128)M * step, (ll)mod);
-    return pair<ll,ll>{value, (ll)mod};
-}
-```
+[C++ 源码](../templates/05-number-theory/extended-crt.cpp)
 
 - 初始 r=0、M=1。空方程组表示全部整数。最终周期为$\mathrm{lcm}(m_i)$，不一定是模数乘积。
 - $m_i=1$不增加限制。不允许模数为 0；“x 等于某值”的约束须另行处理。
@@ -375,21 +223,7 @@ $v_p(n)$是 p 在非零整数 n 中的指数。$v_p(ab)=v_p(a)+v_p(b)$，$v_p(a+
 - 当$0\leq n<p$，fac[n]、ifac[n] 预处理后 C(n,k)=fac[n]ifac[k]ifac[n-k] mod p。
 - 一般 n,k 写成 p 进制，$\binom{n}{k}\equiv\prod_i\binom{n_i}{k_i}\; (\mathrm{mod}\ p)$。任一位$k_i>n_i$则答案为 0。
 
-```cpp
-// fac/ifac have indices 0..p-1; p is prime and small enough to store.
-ll lucas(u64 n, u64 k, ll p, const vector<ll>& fac,
-         const vector<ll>& ifac) {
-    ll ans = 1;
-    while (n || k) {
-        ll a = n % p, b = k % p;
-        if (b > a) return 0;
-        ans = mul_mod(ans, mul_mod(fac[a],
-              mul_mod(ifac[b], ifac[a-b], p), p), p);
-        n /= p; k /= p;
-    }
-    return ans;
-}
-```
+[C++ 源码](../templates/05-number-theory/lucas.cpp)
 
 - 当 p 很大，不能为 Lucas 直接开 p 个元素。单个小位组合数可用乘法式，但耗时依赖$\min (k_i,n_i-k_i)$。
 - Lucas 要求模数为素数。复合模数使用下一页的素数幂方案，再 CRT。
@@ -400,40 +234,7 @@ ll lucas(u64 n, u64 k, ll p, const vector<ll>& fac,
 
 令 $P=p^q$，$E(n)=v_p(n!)$，$U(n)=\frac{n!}{p^{E(n)}}\;\mathrm{mod}\; P$。设 $\mathrm{pref}[t]=\prod_{1\leq i\leq t,\,p\nmid i}i\;\mathrm{mod}\; P$，则 $U(n)\equiv U\left(\left\lfloor\frac{n}{p}\right\rfloor\right)\mathrm{pref}[P]^{\lfloor n/P\rfloor}\mathrm{pref}[n\;\mathrm{mod}\; P]\; (\mathrm{mod}\ P)$。
 
-```cpp
-struct PrimePowerBinom {
-    ll p, mod;
-    vector<ll> pref;
-    PrimePowerBinom(ll prime, ll power) : p(prime), mod(power),
-                                          pref(power+1, 1) {
-        for (ll i = 1; i <= mod; ++i)
-            pref[i] = mul_mod(pref[i-1], i % p ? i : 1, mod);
-    }
-    u64 valuation(u64 n) const {
-        u64 e = 0;
-        while (n) { n /= p; e += n; }
-        return e;
-    }
-    ll unit_factorial(u64 n) const {
-        ll ans = 1;
-        while (n) {
-            ans = mul_mod(ans, pow_mod(pref[mod], n/mod, mod), mod);
-            ans = mul_mod(ans, pref[n%mod], mod);
-            n /= p;
-        }
-        return ans;
-    }
-    ll choose(u64 n, u64 k) const {
-        if (k > n) return 0;
-        u64 e = valuation(n)-valuation(k)-valuation(n-k);
-        ll pe = pow_mod(p, e, mod);
-        if (pe == 0) return 0;
-        ll num = unit_factorial(n);
-        ll den = mul_mod(unit_factorial(k), unit_factorial(n-k), mod);
-        return mul_mod(mul_mod(num, inverse(den, mod), mod), pe, mod);
-    }
-};
-```
+[C++ 源码](../templates/05-number-theory/prime-power-binom.cpp)
 
 - p 必须为素数，mod 必须是它的正整数次幂，且 mod 的大小允许$\mathcal{O}(\;\mathrm{mod}\;)$预处理和存储。
 - 原阶乘可能含 p 因子，不能对原阶乘直接求逆。去 p 后的分母与 mod 互素，可求逆。
@@ -466,32 +267,7 @@ struct PrimePowerBinom {
 
 ## Tonelli-Shanks（素数模，返回一个根或 -1）
 
-```cpp
-ll sqrt_mod(ll a, ll p) {
-    a = norm(a, p);
-    if (p == 2 || a == 0) return a;
-    if (pow_mod(a, (p-1)/2, p) != 1) return -1;
-    ll q = p - 1;
-    int s = 0;
-    while (q % 2 == 0) { q /= 2; ++s; }
-    ll z = 2;
-    while (pow_mod(z, (p-1)/2, p) != p-1) ++z;
-    ll c = pow_mod(z, q, p), t = pow_mod(a, q, p);
-    ll x = pow_mod(a, (q+1)/2, p);
-    int m = s;
-    while (t != 1) {
-        int i = 0;
-        ll v = t;
-        while (v != 1) { v = mul_mod(v, v, p); ++i; }
-        ll b = c;
-        for (int j = 0; j < m-i-1; ++j) b = mul_mod(b, b, p);
-        x = mul_mod(x, b, p);
-        c = mul_mod(b, b, p);
-        t = mul_mod(t, c, p); m = i;
-    }
-    return min(x, p-x);
-}
-```
+[C++ 源码](../templates/05-number-theory/tonelli-shanks.cpp)
 
 - 非零根成 ±x 一对。Tonelli-Shanks 的平方链部分为$\mathcal{O}(\log ^{2}p)$，寻找非剩余的耗时另计。
 - Cipolla 随机取 b 使$w=b^{2}-a$为非剩余，在扩域$i^{2}=w$中求 $(b+i)^{(p+1)/2}$，实部即根，期望$\mathcal{O}(\log  p)$。
@@ -503,42 +279,7 @@ ll sqrt_mod(ll a, ll p) {
 
 求最小 $x\geq0$ 使 $a^x\equiv b\; (\mathrm{mod}\ m)$。互素时令 x=it+j，表存最小 j 对应的$a^j$，扫描 $ba^{-it}$。
 
-```cpp
-ll bsgs_coprime(ll a, ll b, ll m) {
-    if (m == 1) return 0;
-    ll t = (ll)sqrtl((long double)m) + 1;
-    unordered_map<ll,ll> baby;
-    ll cur = 1 % m;
-    for (ll j = 0; j < t; ++j) {
-        baby.emplace(cur, j);             // preserve smallest j
-        cur = mul_mod(cur, a, m);
-    }
-    ll step = inverse(pow_mod(a, t, m), m);
-    cur = norm(b, m);
-    for (ll i = 0; i <= t; ++i) {
-        auto it = baby.find(cur);
-        if (it != baby.end()) return (ll)((i128)i*t + it->second);
-        cur = mul_mod(cur, step, m);
-    }
-    return -1;
-}
-ll discrete_log(ll a, ll b, ll m) {
-    a = norm(a, m); b = norm(b, m);
-    ll removed = 0, coefficient = 1 % m;
-    while (true) {
-        if (coefficient == b) return removed;
-        ll g = gcd(a, m);
-        if (g == 1) break;
-        if (b % g) return -1;
-        m /= g; b /= g;
-        coefficient = mul_mod(coefficient, a/g, m);
-        ++removed;
-    }
-    ll target = mul_mod(b, inverse(coefficient, m), m);
-    ll tail = bsgs_coprime(norm(a,m), target, m);
-    return tail == -1 ? -1 : tail + removed;
-}
-```
+[C++ 源码](../templates/05-number-theory/bsgs.cpp)
 
 - BSGS 期望$\mathcal{O}(\sqrt{m})$时间和空间，m 接近 64 位上限时内存不可承受。表大小按题目限制选择。
 - 扩展算法每轮先判断当前短指数是否已经满足，再去 gcd。a=0、b=1、m=1 都按此模板的空乘积约定处理。
@@ -561,19 +302,7 @@ ll discrete_log(ll a, ll b, ll m) {
 - $\left\lceil n/i\right\rceil=\left\lfloor (n-1)/i\right\rfloor+1$，可转分块处理；n=1 时 n-1=0 的零商段需单独处理。
 - 任意幂次或加权分块需重新推导等商边界，不能把 n/(n/l) 无条件套给所有取整形式。
 
-```cpp
-i128 divisor_sum(ll n) {               // sum floor(n/i), n >= 0
-    i128 ans = 0;
-    for (ll l = 1, r; l <= n; ) {
-        ll q = n / l;
-        r = n / q;
-        ans += (i128)(r-l+1) * q;
-        if (r == n) break;
-        l = r + 1;
-    }
-    return ans;
-}
-```
+[C++ 源码](../templates/05-number-theory/divisor-sum.cpp)
 
 ## 狄利克雷卷积
 
@@ -611,35 +340,7 @@ i128 divisor_sum(ll n) {               // sum floor(n/i), n >= 0
 - $\varphi *1=\mathrm{id}$得 $\Phi(n)=\frac{n(n+1)}{2}-\sum_{l=2}^{n}\Phi\left(\left\lfloor\frac{n}{l}\right\rfloor\right)$。
 - $\mu *1=\varepsilon $得 $M(n)=1-\sum_{l=2}^{n}M\left(\left\lfloor\frac{n}{l}\right\rfloor\right)$，$n\geq 1$。$\Phi (0)=M(0)=0$。
 
-```cpp
-struct Dujiao {
-    ll small_phi[NumberSieve::MAX_N+1]{};
-    ll small_mu[NumberSieve::MAX_N+1]{};
-    int limit;
-    map<ll, pair<i128,i128>> memo;
-    Dujiao(const NumberSieve& s) : limit(s.limit) {
-        for (int i = 1; i <= limit; ++i) {
-            small_phi[i] = small_phi[i-1] + s.phi[i];
-            small_mu[i] = small_mu[i-1] + s.mu[i];
-        }
-    }
-    pair<i128,i128> sum(ll n) {
-        if (n <= limit)
-            return {small_phi[n], small_mu[n]};
-        auto it = memo.find(n);
-        if (it != memo.end()) return it->second;
-        i128 a = (i128)n*((i128)n+1)/2, b = 1;
-        for (ll l = 2, r; l <= n; ) {
-            ll q = n/l; r = n/q;
-            auto [x,y] = sum(q);
-            a -= (i128)(r-l+1)*x; b -= (i128)(r-l+1)*y;
-            if (r == n) break;
-            l = r+1;
-        }
-        return memo[n] = {a,b};
-    }
-};
-```
+[C++ 源码](../templates/05-number-theory/dujiao-sieve.cpp)
 
 - 输入$n\geq 0$，预筛上限至少为 1，Dujiao 对象放全局或声明为 static。预筛内的答案用前缀表读取，最终结果与累加项须能用 i128 表示。
 - 通常取预筛$B\approx n^{2/3}$，忽略字典额外开销时总成本可到$\mathcal{O}(n^{2/3})$量级。内存不足时调小 B 会增加递归工作。
@@ -650,28 +351,7 @@ struct Dujiao {
 
 $\pi (n)$表示$\leq n$的素数个数。对所有不同$v=\left\lfloor n/i\right\rfloor$，初始 g(v)=v-1。枚举素数 p，降序更新$v\geq p^{2}$，有$g(v)-=g(\left\lfloor v/p\right\rfloor)-g(p-1)$。
 
-```cpp
-ll prime_count(ll n) {                  // n >= 0; O(sqrt(n)) states
-    if (n < 2) return 0;
-    vector<ll> values, g;
-    unordered_map<ll,int> id;
-    for (ll l = 1, r; l <= n; ) {
-        ll v = n/l; r = n/v;
-        id[v] = (int)values.size();
-        values.push_back(v); g.push_back(v-1);
-        if (r == n) break;
-        l = r+1;
-    }
-    for (ll p = 2; p <= n/p; ++p) {
-        ll before = g[id[p-1]];
-        if (g[id[p]] == before) continue;
-        for (int i = 0; i < (int)values.size() &&
-                        p <= values[i]/p; ++i)
-            g[i] -= g[id[values[i]/p]] - before;
-    }
-    return g[0];
-}
-```
+[C++ 源码](../templates/05-number-theory/lucy-sieve.cpp)
 
 - values 由大到小，保证右侧仍是筛 p 之前的值。反向更新会重复筛除。
 - 查询值$\left\lfloor \left\lfloor n/i\right\rfloor/p\right\rfloor=\left\lfloor n/(ip)\right\rfloor$仍在商集合。所有$\leq \sqrt{n}$的正整数也在集合中。
@@ -808,24 +488,7 @@ C = H(0, n)
 
 求 $\sum_{i=0}^{n-1}\left\lfloor\frac{ai+b}{m}\right\rfloor$，$n\geq 0$、m>0。用 `floor_div` 将负数归一化后，再执行无符号几何交换。
 
-```cpp
-i128 floor_sum(ll n, ll m, ll a0, ll b0) {
-    i128 a = a0, b = b0, mod = m, count = n;
-    i128 qa = floor_div(a, mod), qb = floor_div(b, mod);
-    i128 ans = qa*count*(count-1)/2 + qb*count;
-    a -= qa*mod; b -= qb*mod;
-    while (true) {
-        ans += count*(count-1)/2*(a/mod);
-        ans += count*(b/mod);
-        a %= mod; b %= mod;
-        i128 y = a*count+b;
-        if (y < mod) break;
-        count = y/mod; b = y%mod;
-        swap(a, mod);
-    }
-    return ans;
-}
-```
+[C++ 源码](../templates/05-number-theory/floor-sum.cpp)
 
 - 时间为欧几里得量级$\mathcal{O}(\log  m)$，前提是 i128 的中间项可表示。区间 [L,R] 可先令 b'=aL+b、n=R-L+1。
 - 本页定义上界为 n-1。若题目求 i=0..n，调用时传 n+1。
@@ -854,24 +517,7 @@ i128 floor_sum(ll n, ll m, ll a0, ll b0) {
 - $p_kq_{k-1}-p_{k-1}q_k=(-1)^{k-1}$，因此每个渐近分数既约，邻项交叉积绝对值为 1。
 - 偶下标渐近分数不超过 x，奇下标不小于 x；有限展开末项可取等。
 
-```cpp
-vector<ll> continued_fraction(ll a, ll b) { // a>=0, b>0
-    vector<ll> terms;
-    while (b) {
-        terms.push_back(a/b);
-        ll r = a%b; a = b; b = r;
-    }
-    return terms;
-}
-pair<i128,i128> convergent(const vector<ll>& terms) {
-    i128 p0 = 0, p1 = 1, q0 = 1, q1 = 0;
-    for (ll a : terms) {
-        i128 p = a*p1+p0, q = a*q1+q0;
-        p0 = p1; p1 = p; q0 = q1; q1 = q;
-    }
-    return {p1,q1};
-}
-```
+[C++ 源码](../templates/05-number-theory/continued-fraction.cpp)
 
 ## 误差与最佳逼近
 
@@ -911,20 +557,7 @@ pair<i128,i128> convergent(const vector<ll>& terms) {
 - 已知邻项 a/b、c/d，令$k=\left\lfloor (N+b)/d\right\rfloor$，下一项为 $\frac{kc-a}{kd-b}$。
 - 长度 $|F_N|=1+\sum_{i=1}^{N}\varphi(i)$。N=1 时恰有 0/1、1/1。
 
-```cpp
-vector<pair<ll,ll>> farey(ll N) {         // N >= 1; output can be O(N^2)
-    vector<pair<ll,ll>> out{{0,1}};
-    ll a = 0, b = 1, c = 1, d = N;
-    while (true) {
-        out.push_back({c,d});
-        if (c == 1 && d == 1) break;
-        ll k = (ll)(((i128)N+b)/d);
-        ll e = (ll)((i128)k*c-a), f = (ll)((i128)k*d-b);
-        a = c; b = d; c = e; d = f;
-    }
-    return out;
-}
-```
+[C++ 源码](../templates/05-number-theory/farey.cpp)
 
 - Calkin-Wilf 树的 a/b 两子节点为 a/(a+b)、(a+b)/b，层序也枚举全部正有理数，顺序与 Stern-Brocot 不同。
 - Stern 双原子序列 s(0)=0、s(1)=1，s(2n)=s(n)、$s(2n+1)=s(n)+s(n+1)$，连续项比值联系上述枚举。
@@ -945,27 +578,7 @@ vector<pair<ll,ll>> farey(ll N) {         // N >= 1; output can be O(N^2)
 
 D 为非平方整数，$2\leq D\leq 10^9$。使用 GNU 内置 i128，超出其正数范围返回 nullopt。通过连分数状态判定范数为 1，避免直接计算$x^{2}-Dy^{2}$溢出。
 
-```cpp
-optional<pair<i128,i128>> pell(ll D) {
-    ll a0 = (ll)sqrtl((long double)D);
-    while ((a0+1)*(a0+1) <= D) ++a0;
-    while (a0*a0 > D) --a0;
-    ll P = 0, Q = 1, a = a0;
-    i128 p0 = 0, p1 = 1, q0 = 1, q1 = 0;
-    const i128 LIMIT = (i128)(((u128)1 << 127)-1);
-    bool positive_norm = false;             // index 0 has negative norm
-    while (true) {
-        if (p1 > (LIMIT-p0)/a || q1 > (LIMIT-q0)/a)
-            return nullopt;
-        i128 p = a*p1+p0, q = a*q1+q0;
-        P = a*Q-P; Q = (D-P*P)/Q; a = (a0+P)/Q;
-        // p_k^2-D*q_k^2 = (-1)^(k+1) * Q_(k+1)
-        if (positive_norm && Q == 1) return pair<i128,i128>{p,q};
-        p0 = p1; p1 = p; q0 = q1; q1 = q;
-        positive_norm = !positive_norm;
-    }
-}
-```
+[C++ 源码](../templates/05-number-theory/pell.cpp)
 
 - 先检查返回值是否为空，再读取 first、second。i128 没有标准流输出运算符，按十进制反复取余自行输出。
 - 全部正解 $x_k+y_k\sqrt{D}=(x_1+y_1\sqrt{D})^k$。还可用 $x_{k+2}=2x_1x_{k+1}-x_k$，y 同理。

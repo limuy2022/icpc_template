@@ -16,4 +16,14 @@ python3 -m venv .venv
 
 构建需要可嵌入的中文 TrueType 字体。Linux 可安装文泉驿正黑（Debian/Ubuntu 的 `fonts-wqy-zenhei`），Windows 可用系统的微软雅黑。也可用 `python build.py --font /path/to/font.ttf` 指定 TTF 或 TrueType TTC 文件。
 
-修改手册请直接编辑 `chapters/` 的源文件。生成的 PDF 已加入 Git 忽略列表。
+生成的 PDF 已加入 Git 忽略列表。
+
+## 编辑模板
+
+代码在 `templates/` 下，按章节分目录。修改板子时直接编辑对应的 `.cpp`，说明和公式在 `chapters/` 下。Markdown 中单独一行的源码链接会在生成 PDF 时展开成 C++ 代码块：
+
+```markdown
+[C++ 源码](../templates/07-graphs/dinic.cpp)
+```
+
+路径相对于当前章节文件。在 GitHub 的 Markdown 预览里可以点击链接查看源码。部分板子依赖同章示例或共用类型和函数，按手册说明搭配使用。

@@ -25,6 +25,7 @@ BODY = "Chinese"
 MONO = "Courier"
 FENCE = chr(96) * 3
 INLINE = re.compile(r"(\$[^$]+\$|\x60[^\x60]+\x60)")
+CPP_INCLUDE = re.compile(r"^\[C\+\+ 源码\]\(([^)]+\.cpp)\)$")
 
 
 def register_font(path):
@@ -64,8 +65,18 @@ def read_pages():
     pages = []
     for chapter in chapters:
         code = False
-        for line in chapter.read_text(encoding="utf-8").splitlines():
-            if line.startswith(FENCE):
+        for number, line in enumerate(chapter.read_text(encoding="utf-8").splitlines(), 1):
+            include = CPP_INCLUDE.fullmatch(line) if not code else None
+            if include:
+                source = (chapter.parent / include[1]).resolve()
+                if not source.is_relative_to(ROOT / "templates") or not source.is_file():
+                    raise SystemExit(f"{chapter.name}:{number} 找不到模板 {include[1]}")
+                body = pages[-1][1]
+                body.append(("space", ""))
+                for cpp_line in source.read_text(encoding="utf-8").splitlines():
+                    body.append(("code", cpp_line.expandtabs(4)))
+                body.append(("space", ""))
+            elif line.startswith(FENCE):
                 code = not code
                 pages[-1][1].append(("space", ""))
             elif not code and line.startswith("# "):

@@ -11,16 +11,7 @@
 - 另一递推 $D_n=nD_{n-1}+(-1)^n$。恰有 k 个固定点的排列数为 $\binom{n}{k}D_{n-k}$。
 - 空排列计为 1。整数精确计算时 $n\geq1$ 有 $D_n$ 等于 $n!/e$ 的最近整数；浮点近似不适合大 n 的精确答案。
 
-```cpp
-vector<ll> derangements(int n,ll mod) {        // n >= 0, mod >= 1
-    vector<ll> d(n+1);
-    d[0] = 1%mod;
-    if (n >= 1) d[1] = 0;
-    for (int i = 2; i <= n; ++i)
-        d[i] = mul_mod(i-1,norm((i128)d[i-1]+d[i-2],mod),mod);
-    return d;
-}
-```
+[C++ 源码](../templates/08-counting/derangements.cpp)
 
 ## 卡特兰数
 
@@ -30,16 +21,7 @@ vector<ll> derangements(int n,ll mod) {        // n >= 0, mod >= 1
 - 常见模型为 n 对合法括号、n 个内部节点的有序满二叉树、n+2 边形的三角剖分、n 对圆周点的不相交完美匹配。
 - n+1 个操作数的合法完全括号化有 $C_n$ 种。路径模型是从 (0,0) 到 (n,n)，只向右/上且不越过指定对角线。
 
-```cpp
-vector<ll> catalan_numbers(int n,ll mod) {     // works for composite mod
-    vector<ll> c(n+1);
-    c[0] = 1%mod;
-    for (int k = 1; k <= n; ++k)
-        for (int i = 0; i < k; ++i)
-            c[k] = norm((i128)c[k]+mul_mod(c[i],c[k-1-i],mod),mod);
-    return c;
-}
-```
+[C++ 源码](../templates/08-counting/catalan.cpp)
 
 - 上述递推只用加乘，任意正模数适用，时间 $\mathcal{O}(n^2)$、空间 $\mathcal{O}(n)$。错排递推为 $\mathcal{O}(n)$。
 - 使用闭式模除法必须确保分母可逆。素数 p 且 $2n<p$ 时可用阶乘逆元；其他情况可用组合数差配 Lucas/exLucas。
@@ -65,28 +47,7 @@ vector<ll> catalan_numbers(int n,ll mod) {     // works for composite mod
 
 ## 小规模连通图模板
 
-```cpp
-vector<ll> connected_labeled_graphs(int N,ll mod) {
-    vector<vector<ll>> choose(N+1,vector<ll>(N+1));
-    for (int n = 0; n <= N; ++n) {
-        choose[n][0] = choose[n][n] = 1%mod;
-        for (int k = 1; k < n; ++k)
-            choose[n][k] = norm((i128)choose[n-1][k-1]+choose[n-1][k],mod);
-    }
-    vector<ll> all(N+1), conn(N+1);
-    for (int n = 0; n <= N; ++n)
-        all[n] = pow_mod(2,(u64)n*(n ? n-1 : 0)/2,mod);
-    for (int n = 1; n <= N; ++n) {
-        conn[n] = all[n];
-        for (int k = 1; k < n; ++k) {
-            ll term = mul_mod(choose[n-1][k-1],conn[k],mod);
-            term = mul_mod(term,all[n-k],mod);
-            conn[n] = norm((i128)conn[n]-term,mod);
-        }
-    }
-    return conn;
-}
-```
+[C++ 源码](../templates/08-counting/connected-labeled-graphs.cpp)
 
 - 任意正模数可用，时间与空间均为 $\mathcal{O}(N^2)$。涉及二分图公式的除以 2 时，须在整数域精确除或确认 2 可逆。
 - 有标号“图=连通块的集合”，对应 EGF $G(x)=\exp(A(x))$、$A(x)=\log G(x)$，即有标号 Riddell 连通化关系。
@@ -108,33 +69,7 @@ vector<ll> connected_labeled_graphs(int N,ll mod) {
 - 在无序边集合上产生的轨道数为 $q=\sum_i m_i\lfloor i/2\rfloor+\sum_i i\binom{m_i}{2}+\sum_{i<j}m_im_j\gcd(i,j)$。
 - 每个边轨道统一决定有边/无边，固定图数为 $2^q$，无标号简单图数为 $\sum_{(m_i)}2^q/z$。边做 c 种颜色时换成 $c^q$。
 
-```cpp
-ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
-    vector<ll> fac(n+1,1);
-    for (int i = 1; i <= n; ++i) fac[i] = mul_mod(fac[i-1],i,p);
-    vector<int> cycles;
-    ll answer = 0;
-    auto dfs = [&](auto&& self,int left,int smallest) -> void {
-        if (left == 0) {
-            ll orbit = 0, z = 1;
-            vector<int> count(n+1);
-            for (int i = 0; i < (int)cycles.size(); ++i) {
-                int a = cycles[i]; ++count[a]; z = mul_mod(z,a,p);
-                orbit += a/2;
-                for (int j = 0; j < i; ++j) orbit += gcd(a,cycles[j]);
-            }
-            for (int c : count) z = mul_mod(z,fac[c],p);
-            ll term = mul_mod(pow_mod(2,orbit,p),pow_mod(z,p-2,p),p);
-            answer = norm((i128)answer+term,p); return;
-        }
-        for (int a = smallest; a <= left; ++a) {
-            cycles.push_back(a); self(self,left-a,a); cycles.pop_back();
-        }
-    };
-    dfs(dfs,n,1);
-    return answer;
-}
-```
+[C++ 源码](../templates/08-counting/burnside.cpp)
 
 - 枚举整数分拆，适合较小 n。空图返回 1；n=1..5 的无标号简单图数为 1、2、4、11、34。
 - 模板要求 p 为素数且 p>n，使 z 可逆。整数公式中的除法、树计数中的 (n-1) 与 2，都要先核对模数条件。
@@ -153,44 +88,7 @@ ll unlabeled_simple_graphs(int n,ll p) { // p prime, p > n
 
 无向图拉普拉斯 $L=D-A$，删去任意同一行列得到余子式，其行列式为生成树数。重边权相加，自环不贡献生成树。
 
-```cpp
-ll determinant_mod(vector<vector<ll>> a,ll p) { // square; p prime
-    int n = (int)a.size();
-    for (auto& row : a) for (ll& x : row) x = norm(x,p);
-    ll answer = 1%p;
-    for (int col = 0; col < n; ++col) {
-        int pivot = col;
-        while (pivot < n && a[pivot][col] == 0) ++pivot;
-        if (pivot == n) return 0;
-        if (pivot != col) { swap(a[pivot],a[col]); answer = norm(-answer,p); }
-        ll value = a[col][col], inv = pow_mod(value,p-2,p);
-        answer = mul_mod(answer,value,p);
-        for (int i = col+1; i < n; ++i) {
-            ll factor = mul_mod(a[i][col],inv,p);
-            for (int j = col+1; j < n; ++j)
-                a[i][j] = norm((i128)a[i][j]-mul_mod(factor,a[col][j],p),p);
-            a[i][col] = 0;
-        }
-    }
-    return answer;
-}
-ll spanning_tree_count(const ForwardStar<ll>& g,ll p) {
-    int n = g.n;
-    if (n == 0) return 0;
-    int k = n-1;
-    vector<vector<ll>> a(k,vector<ll>(k));
-    for (int u = 0; u < k; ++u) {
-        for (int id = g.head[u]; id; id = g.line[id].next) {
-            int v = g.line[id].v;
-            ll w = g.line[id].val;
-            if (u == v) continue;
-            a[u][u] = norm((i128)a[u][u]+w,p);
-            if (v < k) a[u][v] = norm((i128)a[u][v]-w,p);
-        }
-    }
-    return determinant_mod(a,p);
-}
-```
+[C++ 源码](../templates/08-counting/matrix-tree.cpp)
 
 - 每条无向边用 add_undirected(u,v,w) 加入，无权边传 w=1。加权答案为所有生成树的边权乘积之和。n=1 的空余子式行列式为 1，非连通图为 0。
 - 时间 $\mathcal{O}(n^3+m)$。该消元模板限素数模，合数模的非零主元可能不可逆，需用整数消元或其他行列式算法。
