@@ -8,16 +8,16 @@ python3 templates/13-stress/stress.py
 
 [Python 源码](../templates/13-stress/stress.py)
 
-- 每轮用当前时间取种子，一直跑到程序退出非零或答案不同。按空白分词比较答案。
+- 每轮直接随机生成数据，一直跑到程序退出非零或答案不同。按空白分词比较答案。
 - 失败时直接用当前目录的 fail.in 复现。两份程序的标准输出分别写入 candidate.out 和 brute.out，错误输出留在终端。
 - 在 make_case 中换数据类型或直接改生成函数。需要手动停拍时按 Ctrl+C。
 
 # Python · 常用小数据生成
 
-相同种子和类型生成相同数据。独立生成时依次传种子和类型，省略类型时生成数组。
+独立运行时传入数据类型，省略时生成数组。
 
 ```text
-python3 templates/13-stress/gen.py 42 tree > test.in
+python3 templates/13-stress/gen.py tree > test.in
 ```
 
 [Python 源码](../templates/13-stress/gen.py)

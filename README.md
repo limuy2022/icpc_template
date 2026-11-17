@@ -53,4 +53,4 @@ find templates -name '*.cpp' -exec clang-format -i {} +
 python3 templates/13-stress/stress.py
 ```
 
-每轮用当前时间取种子，失败时保留 `fail.in`。在 `make_case` 中可选 `array`、`perm`、`string`、`tree` 或 `graph`，也可以直接改生成函数。单独生成可运行 `python3 templates/13-stress/gen.py 42 tree`。
+每轮直接随机生成数据，失败时保留 `fail.in`。在 `make_case` 中可选 `array`、`perm`、`string`、`tree` 或 `graph`，也可以直接改生成函数。单独生成可运行 `python3 templates/13-stress/gen.py tree`。
