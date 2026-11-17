@@ -8,7 +8,9 @@ static constexpr int AC_CAP = 200005;
 ACNode ac[AC_CAP];
 int ac_sz = 1, ac_order[AC_CAP], ac_used = 0;
 void ac_init() {
-    ac[0] = {}; ac_sz = 1; ac_used = 0;
+    ac[0] = {};
+    ac_sz = 1;
+    ac_used = 0;
 }
 int ac_insert(string_view s) {
     int u = 0;
@@ -20,7 +22,7 @@ int ac_insert(string_view s) {
         }
         u = ac[u].go[c];
     }
-    return u;                        // save endpoint for this pattern
+    return u; // save endpoint for this pattern
 }
 void ac_build() {
     for (int c = 0; c < 26; ++c)
@@ -32,13 +34,14 @@ void ac_build() {
             if (v) {
                 ac[v].fail = ac[f].go[c];
                 ac_order[ac_used++] = v;
-            } else ac[u].go[c] = ac[f].go[c];
+            } else
+                ac[u].go[c] = ac[f].go[c];
         }
     }
 }
 long long ac_occ[AC_CAP];
 void ac_count(string_view text) {
-    fill_n(ac_occ,ac_sz,0);
+    fill_n(ac_occ, ac_sz, 0);
     int u = 0;
     for (char ch : text) {
         u = ac[u].go[ch - 'a'];

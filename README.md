@@ -33,3 +33,13 @@ python3 -m venv .venv
 使用全局数组的板子每次只维护一份状态。多测按章节说明重新初始化，或重新调用构建函数。
 
 所有 `.cpp` 都可以单独编译，例如 `g++ -std=gnu++17 templates/07-graphs/two-sat.cpp -o two-sat`。纯模板的依赖和空入口放在 `#if __INCLUDE_LEVEL__ == 0 // PDF: hide` 与 `#endif // PDF: endhide` 之间。这样单独编译时会带上依赖和入口，作为片段被另一个示例包含时会跳过这些内容，PDF 也会省略这些行。
+
+## 格式化 C++ 源码
+
+仓库根目录的 `.clang-format` 统一使用 4 空格缩进和 88 列。格式化全部板子：
+
+```sh
+find templates -name '*.cpp' -exec clang-format -i {} +
+```
+
+只检查格式时，把 `-i` 换成 `--dry-run --Werror`。

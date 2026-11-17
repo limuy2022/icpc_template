@@ -15,14 +15,14 @@ void prefix_function(string_view s) {
 vector<int> kmp(string_view text, string_view pat) {
     int n = (int)text.size(), m = (int)pat.size();
     vector<int> hits;
-    if (m == 0) return hits;                 // empty pattern: no hits
+    if (m == 0) return hits; // empty pattern: no hits
     prefix_function(pat);
     for (int i = 0, j = 0; i < n; ++i) {
         while (j && text[i] != pat[j]) j = pi[j - 1];
         if (text[i] == pat[j]) ++j;
         if (j == m) {
             hits.push_back(i - m + 1);
-            j = pi[j - 1];                   // allow overlapping hits
+            j = pi[j - 1]; // allow overlapping hits
         }
     }
     return hits;
