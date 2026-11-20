@@ -107,6 +107,20 @@ GNU C++ 可用 `#include <bits/stdc++.h>`。下方示例假定已写 `using name
 - `pop()` 不返回元素。先判空，再读 `top()` / `front()`，最后删除。
 - bitset 的大小编译期固定，支持 `& | ^ ~ << >>`、`test(i)`、`any()`、`none()`。
 
+# STL 赛场速查 · 组合键哈希
+
+## pair 和 tuple 作哈希键
+
+[C++ 源码](../templates/01-pbds-stl/pair-tuple-hash.cpp)
+
+```cpp
+unordered_map<pair<int, int>, int, TupleHash> freq;
+unordered_set<tuple<int, int, int>, TupleHash> seen;
+```
+
+- GNU C++17 下给 `pair` / `tuple` 显式传入哈希器。每个分量须支持 `std::hash`，如整数或 `string`。
+- 用运行时种子和 SplitMix64 按分量顺序混合，避免直接异或时 `(x, y)` 和 `(y, x)` 必然得到同一个哈希值。
+
 # STL 赛场速查 · 算法
 
 大多数算法使用半开区间 `[first, last)`。`end()` 指向尾后，不能解引用。
